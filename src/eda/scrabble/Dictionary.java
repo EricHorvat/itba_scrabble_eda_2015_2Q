@@ -12,7 +12,10 @@ public class Dictionary{
 
 		private void add(String word){
 			if(value==null)
+			{
 				value = word.charAt(0);
+				Main.POPULARITY_MAP.put(value, Main.POPULARITY_MAP.get(value)+1);
+			}
 			if(value==word.charAt(0)){
 				if(nextLetter == null)
 					nextLetter = new Dictionary();
@@ -22,9 +25,11 @@ public class Dictionary{
 					nextLetter.add(word.substring(1,word.length()));
 			}
 			else
+			{
 				if(next == null)
 					next = new Node();
 				next.add(word);
+			}
 		}
 	}
 	

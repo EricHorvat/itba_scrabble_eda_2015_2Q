@@ -1,7 +1,6 @@
 package eda.scrabble.file;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -48,7 +47,7 @@ public class InputData{
 			inStream = new BufferedReader(new FileReader(fileName));
 			String line;
 			while((line = inStream.readLine())!= null){
-				dict.add(line);
+				dict.add(line.toUpperCase());
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -72,7 +71,7 @@ public class InputData{
 			inStream = new BufferedReader(new FileReader(fileName));
 			String line;
 			if((line = inStream.readLine())!= null){
-				vect = line.toCharArray();
+				vect = line.toUpperCase().toCharArray();
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
