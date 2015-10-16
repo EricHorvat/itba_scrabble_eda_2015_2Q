@@ -1,16 +1,20 @@
 package eda.scrabble;
 
+import eda.scrabble.file.InputData;
+
+import java.util.Map;
+
 public class Main {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		dictoniary=fillDictoniary();
-		chars = getGameChars();
+		dictionary = InputData.fillDictoniary();
+		chars = InputData.getGameChars();
 	}
 	
-	public static Map<Character,Integer> VALUE_MAP = fillValueMap();
+	public static Map<Character,Integer> VALUE_MAP = InputData.fillValueMap();
 
-	Dictoniary dictoniary;
-	List<Character> chars;
+	static Dictionary dictionary;
+	static char[] chars;
 
 }

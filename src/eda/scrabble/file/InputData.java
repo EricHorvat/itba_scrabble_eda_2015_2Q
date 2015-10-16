@@ -1,8 +1,16 @@
-package eda.scrabble.file
+package eda.scrabble.file;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+
+import eda.scrabble.Dictionary;
 
 public class InputData{
 
-	private class InputData(){}
+	private InputData(){}
 
 	public static HashMap<Character, Integer> fillValueMap(){
 		
@@ -13,22 +21,27 @@ public class InputData{
 			inStream = new BufferedReader(new FileReader(fileName));
 			String line;
 			while((line = inStream.readLine())!= null){
-				char c = line.charAt(0)
-				int value = Integer.parseInt(line.substring(2,line.lenght));
+				char c = line.charAt(0);
+				int value = Integer.parseInt(line.substring(2,line.length()));
 				hMap.put(c,value);
 			}
 
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} finally{
 			if(inStream != null){
-				inStream.close();
+				try {
+					inStream.close();
+				} catch (IOException e){}
 			}
 		}
-		return hMap
+		return hMap;
 	}
 
-	public static Dictoniary fillDictoniary(){
+	public static Dictionary fillDictoniary(){
 
-		Dictoniary dict = new Dictoniary();
+		Dictionary dict = new Dictionary();
 		String fileName = "diccinario.txt";
 		BufferedReader inStream = null;
 		try{
@@ -37,16 +50,22 @@ public class InputData{
 			while((line = inStream.readLine())!= null){
 				dict.add(line);
 			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} finally{
 			if(inStream != null){
-				inStream.close();
+				try {
+					inStream.close();
+				} catch (IOException e) {}
 			}
 		}
+		return dict;
 	}
 
 	public static char[] getGameChars(){
 
-		char[] vect;
+		char[] vect = new char[0];
 		String fileName = "letras.txt";
 		BufferedReader inStream = null;
 		try{
@@ -55,9 +74,14 @@ public class InputData{
 			if((line = inStream.readLine())!= null){
 				vect = line.toCharArray();
 			}
-		} finally{
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
 			if(inStream != null){
-				inStream.close();
+				try {
+					inStream.close();
+				} catch (IOException e) {}
 			}
 		}
 		return vect;
