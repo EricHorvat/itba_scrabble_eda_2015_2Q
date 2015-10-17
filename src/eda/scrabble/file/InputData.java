@@ -71,7 +71,7 @@ public class InputData{
 			}
 			
 		}
-		Dictionary dict = new Dictionary(popularMap);
+		Dictionary dict = Dictionary.invertedDictionary(popularMap);
 		
 		System.out.println(popularMap);
 		
@@ -79,23 +79,6 @@ public class InputData{
 			dict.add(word.toUpperCase());
 		}
 		
-		//TODO: Esto de aca abajo no hace falta mas creo
-		List<Character> popularList = new ArrayList<Character>();
-		while (!popularMap.isEmpty()) {
-			int max = -1;
-			Character ch = null;
-			for (Character c : popularMap.keySet()) {
-				if (max < popularMap.get(c)) {
-					max = popularMap.get(c);
-					ch = c;
-				}
-			}
-			popularList.add(ch);
-			popularMap.remove(ch);
-		}
-		
-		//TODO: esto creo que tampoco
-		dict.setPopularity(popularList);
 		return dict;
 	}
 

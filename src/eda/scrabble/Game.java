@@ -25,9 +25,10 @@ public class Game {
 		grid = new Grid();
 		dictionary = InputData.fillDictionary(DICTIONARY_FILENAME);
 		characters = InputData.getGameChars(LETTERS_FILENAME);
+		/*TODO ACA SE EJECUTA MEJOR OPCION*/System.out.println(dictionary.bestOption(characters, 7));
 	}
 	
-	//TODO: El dictionary tendria que hacer una integracion con esto
+	//(Martin v7) TODO: El dictionary tendria que hacer una integracion con esto
 	private void addWord(int x, int y, Direction d, String word) {
 		
 		if (x < 0 || y < 0)
@@ -51,7 +52,7 @@ public class Game {
 	}
 	
 	public void start() {
-		//TODO: Llamaria a un metodo getNext o algo asi
+		//(Martin v7)TODO: Llamaria a un metodo getNext o algo asi
 	}
 	
 	public static Game getInstance() {

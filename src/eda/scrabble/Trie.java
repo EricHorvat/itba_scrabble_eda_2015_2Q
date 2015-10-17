@@ -1,11 +1,16 @@
 package eda.scrabble;
 
+import java.util.List;
 import java.util.Map;
 
 public class Trie {
 	
+	private static final char END_CHAR = 0;
+	
+	
 	private static class Node {
-//		 (first)  value: H, next: C, nextLetter: O
+//		(Martin v7)
+//		(first)  value: H, next: C, nextLetter: O
 //		    |
 //		    V10   8                      5
 //				H---->C (next) ------------> J
@@ -38,15 +43,15 @@ public class Trie {
 			if (value == null) value = c;
 			if (value == c) {
 				System.out.println(" matcheo");
-				// Entre al substring
+				// (Martin v7) Entre al substring
 				if (nextLetter == null) nextLetter = new Trie();
-				// Fin de la palabra
+				// (Martin v7) Fin de la palabra
 				if (word.length() == 1) nextLetter.addEndLetter();
-				// Agrega a mi substring
+				// (Martin v7) Agrega a mi substring
 				else nextLetter.add(word.substring(1, word.length()));
 			}
 			else {
-				//TODO: Es tarde pero creo que anda. No se bien porque
+				//(Martin v7)TODO: Es tarde pero creo que anda. No se bien porque
 				//      pero el objetivo es que el trie este ordenado
 				//      descendentemente como el dibujo de arriba
 				System.out.println(" "+this + " vs " + c);
@@ -115,6 +120,47 @@ public class Trie {
 		if (node.next != null)
 			return getChildren(node.next, c);
 		return null;
+	}
+
+	String bestOptionBy(
+			List<Character> manipulableChars,
+			int actualPosition,/*(Eric v8) Esto sirve para decir cuando va(n) la(s) ficha(s) fija(s), solo falta ver si las pasamos por listas o arrays, etc*/
+			int maxLength, /*(Eric v8) Serviria para no buscar de mas, se pueden poner 7 fichas*/
+			Trie trie
+			)
+	{
+		String proWord = null;
+		Node node = trie.bestNode(manipulableChars);
+		if(node!=null &&node.value==END_CHAR)
+			return "";
+		
+		//(Eric v8)Agrega al caracter de fin a las posibilidades
+		if (actualPosition == 2)	manipulableChars.add(END_CHAR);
+		
+		while(node!=null && proWord==null){
+			
+			Character charact = node.value;
+			manipulableChars.remove(charact);
+			proWord = bestOptionBy(manipulableChars, actualPosition+1, maxLength, node.nextLetter);
+			
+			//(Eric v8)Devuelve el caracter que se borro al array, ya que va a ser reutiizado
+			manipulableChars.add(charact);
+			
+			//(Eric v8)Si encontro palabra le agrega el caracter actual al comienzo
+			if(proWord!=null) proWord = charact.toString().concat(proWord);
+				else	node = trie.bestNode(manipulableChars);
+		}
+		return proWord;
+	}
+
+	private Node bestNode( List<Character> manipulableChars){
+		return bestNode(manipulableChars,first);
+	}
+	
+	private Node bestNode( List<Character> manipulableChars,Node node){
+		if(node == null) return null;
+		if(manipulableChars.contains(node.value)) return node;
+		return bestNode(manipulableChars,node.next);
 	}
 	
 }
