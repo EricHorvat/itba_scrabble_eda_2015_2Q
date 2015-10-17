@@ -11,25 +11,23 @@ import java.util.Map;
 import eda.scrabble.Dictionary;
 
 public class InputData{
-
-	private InputData(){}
-
-	public static HashMap<Character, Integer> fillValueMap(){
+	
+	private InputData() {
 		
-		HashMap<Character, Integer> hMap = new HashMap<Character, Integer>();
-		String fileName = "charValue.txt";
+	}
+	
+	public static List<String> readAllLines(String filename) {
+		
+		List<String> lines = new ArrayList<String>();
+		
 		BufferedReader inStream = null;
-		try{
-			inStream = new BufferedReader(new FileReader(fileName));
+		try {
+			inStream = new BufferedReader(new FileReader(filename));
 			String line;
-			while((line = inStream.readLine())!= null){
-				char c = line.charAt(0);
-				int value = Integer.parseInt(line.substring(2,line.length()));
-				hMap.put(c,value);
+			while ((line = inStream.readLine()) != null) {
+				lines.add(line);
 			}
-
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally{
 			if(inStream != null){
@@ -38,84 +36,79 @@ public class InputData{
 				} catch (IOException e){}
 			}
 		}
+		
+		return lines;
+	}
+
+	public static HashMap<Character, Integer> fillValueMap(String filename) {
+		
+		HashMap<Character, Integer> hMap = new HashMap<Character, Integer>();
+		char c;
+		int value;
+		
+		for (String line : readAllLines(filename)) {
+			c = line.toUpperCase().charAt(0);
+			value = Integer.parseInt(line.substring(2, line.length()));
+			hMap.put(c, value);
+		}
+		
 		return hMap;
 	}
 
-	public static Dictionary fillDictoniary(){
-		Map<Character,Integer> popularMap = newPopularityMap();
-		Dictionary dict = new Dictionary();
-		String fileName = "diccionario.txt";
-		BufferedReader inStream = null;
-		try{
-			inStream = new BufferedReader(new FileReader(fileName));
-			String line;
-			while((line = inStream.readLine())!= null){
-				dict.add(line.toUpperCase());
-				for (char c : line.toUpperCase().toCharArray()) {
-					popularMap.put(c, popularMap.get(c)+1);
-				}
+	public static Dictionary fillDictionary(String filename) {
+		Map<Character, Integer> popularMap = new HashMap<Character, Integer>();
+		
+		for (char c = 'A';c <= 'Z';c++)
+			popularMap.put(c, 0);
+		
+		
+		List<String> words = readAllLines(filename);
+		
+		for (String word : words) {
+			word = word.toUpperCase();
+			for (char c : word.toCharArray()) {
+				popularMap.put(c, popularMap.get(c)+1);
 			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally{
-			if(inStream != null){
-				try {
-					inStream.close();
-				} catch (IOException e) {}
-			}
+			
 		}
+		Dictionary dict = new Dictionary(popularMap);
+		
+		System.out.println(popularMap);
+		
+		for (String word : words) {
+			dict.add(word.toUpperCase());
+		}
+		
+		//TODO: Esto de aca abajo no hace falta mas creo
 		List<Character> popularList = new ArrayList<Character>();
-		while(!popularMap.isEmpty()){
-			int max=-1;
+		while (!popularMap.isEmpty()) {
+			int max = -1;
 			Character ch = null;
-			for(Character c : popularMap.keySet())
-			{
-				if(max < popularMap.get(c))
-				{
+			for (Character c : popularMap.keySet()) {
+				if (max < popularMap.get(c)) {
 					max = popularMap.get(c);
 					ch = c;
 				}
 			}
 			popularList.add(ch);
 			popularMap.remove(ch);
-		}			
+		}
+		
+		//TODO: esto creo que tampoco
 		dict.setPopularity(popularList);
 		return dict;
 	}
 
-	public static List<Character> getGameChars(){
+	public static List<Character> getGameChars(String filename){
 
 		List<Character> list = new ArrayList<Character>();
-		String fileName = "letras.txt";
-		BufferedReader inStream = null;
-		try{
-			inStream = new BufferedReader(new FileReader(fileName));
-			String line;
-			if((line = inStream.readLine())!= null){
-				for(char c : line.toCharArray()){
-					list.add(c);
-				}
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}finally{
-			if(inStream != null){
-				try {
-					inStream.close();
-				} catch (IOException e) {}
+		List<String> lines = readAllLines(filename);
+		
+		for (String line : lines) {
+			for (char c : line.toCharArray()) {
+				list.add(c);
 			}
 		}
 		return list;
-	}
-
-
-	private static Map<Character, Integer> newPopularityMap() {
-		HashMap<Character, Integer> hMap = new HashMap<Character, Integer>();
-		for(char c = 'A';c <= 'Z';c++){
-			hMap.put(c, 0);
-		}
-		return hMap;
 	}
 }
