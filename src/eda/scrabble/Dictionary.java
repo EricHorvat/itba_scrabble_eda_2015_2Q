@@ -1,53 +1,54 @@
 package eda.scrabble;
 
-public class Dictionary{
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
+public class Dictionary extends Trie{
 
-	public class Node{
-		Character value;
-		Node next;
-		Dictionary nextLetter;
-
-		private Node(){}
-
-		private void add(String word){
-			if(value==null)
-			{
-				value = word.charAt(0);
-				Main.POPULARITY_MAP.put(value, Main.POPULARITY_MAP.get(value)+1);
-			}
-			if(value==word.charAt(0)){
-				if(nextLetter == null)
-					nextLetter = new Dictionary();
-				if(word.length()==1)
-					nextLetter.addEndLetter();
-				else
-					nextLetter.add(word.substring(1,word.length()));
-			}
-			else
-			{
-				if(next == null)
-					next = new Node();
-				next.add(word);
-			}
-		}
+	/*TODO check visibility*/private List<Character> popularList; 
+	
+	public Dictionary(){}
+	
+	public void setPopularity(List<Character> list){
+		popularList = list;
 	}
 	
-	Node first = null;
-
-	public Dictionary(){}
-
-	public void add(String word){
-		if(first == null)
-			first= new Node();
-		first.add(word);
+	public String bestWordByPopularity(List<Character> disponibleChars, int maxLength){
+		return bestOptionBy(disponibleChars,popularList,0,maxLength,this);
 	}
-	public void addEndLetter(){
-		Node node = new Node();
-		node.value = 0;
-		node.next = first;
-		first= node;
+	
+	private String bestOptionBy(List<Character> disponibleChars,List<Character> order, int actualPosition, int maxLength, Trie trie){
+		boolean found = false;
+		List<Character> list = new ArrayList<Character>();
+		
+		for(Character c : order){
+			if(disponibleChars.contains(c) /**Creo que no hace falta/&& trie.contains(c)/**/)
+				list.add(c);
+		}
+		if(actualPosition>0){
+			list.add((char)0);
+		}
+		Iterator<Character> it = list.iterator();
+		String s = null;
+		while( it.hasNext() && !found){
+			Character c = it.next();
+			List<Character> tempList = new ArrayList<Character>();
+			tempList.addAll(disponibleChars);
+			tempList.remove(c);
+			Trie childTrie = trie.getChildren(c);
+			if((c!=(char)0)&&(childTrie!= null)&&((s = bestOptionBy(tempList, order, actualPosition+1, maxLength, childTrie))!=null))
+				{
+					found = true;
+					s = c.toString().concat(s);
+				}
+			else{
+				if((c==(char)0)&& trie.contains(c))
+					return "";
+				it.remove();
+			}
+		}
+		return s;
 	}
-
-
+	
 }
