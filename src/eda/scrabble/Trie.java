@@ -71,6 +71,7 @@ public class Trie {
 							System.out.println("First es "+ c);
 						owner.first = n;
 					}
+					/**/else {prev.next = n;} 
 					n.add(word, this);
 				} else {
 					if (next == null)
@@ -164,7 +165,7 @@ public class Trie {
 			
 			//(Eric v8)Si encontro palabra le agrega el caracter actual al comienzo
 			if (resultWord != null) resultWord = currentChar.toString().concat(resultWord);
-			else	node = trie.bestNode(manipulableChars);
+			else	node = trie.bestNode(manipulableChars,node.next);
 		}
 		return resultWord;
 	}

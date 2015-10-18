@@ -26,7 +26,7 @@ public class Game {
 	private Game() {
 		grid = new Grid();
 		dictionary = InputData.fillDictionary(DICTIONARY_FILENAME,
-				InputData.DictionaryFillStrategy.HIGHEST_OCURRENCY);
+				InputData.DictionaryFillStrategy.LOWEST_OCURRENCY);
 		characters = InputData.getGameChars(LETTERS_FILENAME);
 	}
 	
@@ -57,7 +57,7 @@ public class Game {
 		//(Martin v7)TODO: Llamaria a un metodo getNext o algo asi
 		/*TODO ACA SE EJECUTA MEJOR OPCION*/
 		System.out.println(dictionary.bestOption(characters, MAX_LENGTH_WORD,null));
-		System.out.println(dictionary.bestOption(characters, MAX_LENGTH_WORD,'C'));
+		System.out.println(dictionary.bestOption(characters, MAX_LENGTH_WORD,'P'));
 	}
 	
 	public static Game getInstance() {
