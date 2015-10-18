@@ -6,6 +6,9 @@ import java.util.Map;
 
 public class Dictionary extends Trie {
 
+	private static final int MIN_LENGTH_ALLOWED = 2;
+	private static final int MAX_LENGTH_ALLOWED = 7;
+	
 	public Dictionary() {
 		
 	}
@@ -13,11 +16,23 @@ public class Dictionary extends Trie {
 	public Dictionary(Map<Character, Integer> map) {
 		super(map);
 	}
+	
+	public void add(String word) {
+		if (word != null)
+			if (word.length() >= MIN_LENGTH_ALLOWED && word.length() <= MAX_LENGTH_ALLOWED)
+				super.add(word);
+	}
 
+	/**
+	 * @deprecated Lo movi a Input Data para que lo pasen como estrategia
+	 *             asi no nos joden por POO. Habria que hacer una clase
+	 *             InvertedDictionary :S 
+	 * @see @{InputData.DictionaryStategy}
+	 */
 	/*(Eric v8) Si quiero la prioridad que me pasan al reves, sea, el mayor al final*/
 	public static Dictionary invertedDictionary(Map<Character, Integer> hierarchy){
 		for(Character c : hierarchy.keySet()){
-		hierarchy.put(c, -hierarchy.get(c));
+			hierarchy.put(c, -hierarchy.get(c));
 		}
 		return new Dictionary(hierarchy);
 	}
@@ -28,7 +43,8 @@ public class Dictionary extends Trie {
 			)
 	{
 		List<Character> manipulableChars = new ArrayList<Character>(availableChars);
-		return bestOptionBy(manipulableChars,0,maxLength, this);
+		String best = bestOptionBy(manipulableChars, 0, maxLength, this);
+		return best;
 	}
 	
 	

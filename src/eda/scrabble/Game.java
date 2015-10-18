@@ -10,6 +10,8 @@ public class Game {
 	private final static String DICTIONARY_FILENAME = "diccionario.txt";
 	private final static String LETTERS_FILENAME = "letras.txt";
 	
+	private final static int MAX_LENGTH_WORD = 7;
+	
 	private Grid grid;
 	private static Game self = null;
 	
@@ -23,9 +25,9 @@ public class Game {
 	
 	private Game() {
 		grid = new Grid();
-		dictionary = InputData.fillDictionary(DICTIONARY_FILENAME);
+		dictionary = InputData.fillDictionary(DICTIONARY_FILENAME,
+				InputData.DictionaryStrategy.HIGHEST_OCURRENCY_FIRST);
 		characters = InputData.getGameChars(LETTERS_FILENAME);
-		/*TODO ACA SE EJECUTA MEJOR OPCION*/System.out.println(dictionary.bestOption(characters, 7));
 	}
 	
 	//(Martin v7) TODO: El dictionary tendria que hacer una integracion con esto
@@ -53,6 +55,8 @@ public class Game {
 	
 	public void start() {
 		//(Martin v7)TODO: Llamaria a un metodo getNext o algo asi
+		/*TODO ACA SE EJECUTA MEJOR OPCION*/
+		System.out.println(dictionary.bestOption(characters, MAX_LENGTH_WORD));
 	}
 	
 	public static Game getInstance() {

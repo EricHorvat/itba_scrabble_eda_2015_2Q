@@ -131,36 +131,82 @@ public class Trie {
 	{
 		String proWord = null;
 		Node node = trie.bestNode(manipulableChars);
-		if(node!=null &&node.value==END_CHAR)
+		if (node != null && node.value == END_CHAR)
 			return "";
 		
 		//(Eric v8)Agrega al caracter de fin a las posibilidades
 		if (actualPosition == 2)	manipulableChars.add(END_CHAR);
 		
-		while(node!=null && proWord==null){
+		Character currentChar = null;
+		
+		while (node != null && proWord == null) {
 			
-			Character charact = node.value;
-			manipulableChars.remove(charact);
+			currentChar = node.value;
+			manipulableChars.remove(currentChar);
+			// baja un nivel. Busca la mejor subopcion
 			proWord = bestOptionBy(manipulableChars, actualPosition+1, maxLength, node.nextLetter);
 			
 			//(Eric v8)Devuelve el caracter que se borro al array, ya que va a ser reutiizado
-			manipulableChars.add(charact);
+			manipulableChars.add(currentChar);
 			
 			//(Eric v8)Si encontro palabra le agrega el caracter actual al comienzo
-			if(proWord!=null) proWord = charact.toString().concat(proWord);
-				else	node = trie.bestNode(manipulableChars);
+			if (proWord != null) proWord = currentChar.toString().concat(proWord);
+			else	node = trie.bestNode(manipulableChars);
 		}
 		return proWord;
 	}
 
-	private Node bestNode( List<Character> manipulableChars){
-		return bestNode(manipulableChars,first);
+	/**
+	 * Recorre horizontalmente los nodos hasta que uno lo contenga
+	 */
+	private Node bestNode( List<Character> manipulableChars) {
+		return bestNode(manipulableChars, first);
 	}
 	
-	private Node bestNode( List<Character> manipulableChars,Node node){
-		if(node == null) return null;
-		if(manipulableChars.contains(node.value)) return node;
-		return bestNode(manipulableChars,node.next);
+	private Node bestNode( List<Character> manipulableChars, Node node) {
+		if (node == null) return null;
+		if (manipulableChars.contains(node.value)) return node;
+		return bestNode(manipulableChars, node.next);
+	}
+	
+	/**
+	 * Pseudo codigo
+	 * @param trie
+	 * @param available
+	 * @return
+	 */
+	private String moveHorizontally(Trie trie, List<Character> available) {
+		
+		if (trie == null) return "";
+		
+		Node currentNode = trie.first;
+		
+		while (currentNode != null) {
+			
+			if (available.contains(currentNode.value)) {
+				
+				// Marcar como letra usada 
+				available.remove(currentNode.value);
+				
+				// descender en el trie
+				String str = moveHorizontally(currentNode.nextLetter, available);
+				if (str != null) {
+					// Significa que encontre la palabra en mi sub-trie
+					// la junto con mi valor y seguimos pa delante
+					//TODO: Hacer un remove de la palabra recien usada
+					return currentNode.value.toString().concat(str);
+				}
+				// Mi sub-trie no encontro la palabra
+				// La repongo entonces
+				available.add(currentNode.value);
+				
+			}
+			
+			currentNode = currentNode.next;
+		}
+		
+		return null;
+		
 	}
 	
 }

@@ -12,6 +12,11 @@ import eda.scrabble.Dictionary;
 
 public class InputData{
 	
+	public enum DictionaryStrategy {
+		HIGHEST_OCURRENCY_FIRST,
+		HIGHEST_OCURRENCY_LAST
+	};
+	
 	private InputData() {
 		
 	}
@@ -55,7 +60,7 @@ public class InputData{
 		return hMap;
 	}
 
-	public static Dictionary fillDictionary(String filename) {
+	public static Dictionary fillDictionary(String filename, DictionaryStrategy strategy) {
 		Map<Character, Integer> popularMap = new HashMap<Character, Integer>();
 		
 		for (char c = 'A';c <= 'Z';c++)
@@ -67,11 +72,14 @@ public class InputData{
 		for (String word : words) {
 			word = word.toUpperCase();
 			for (char c : word.toCharArray()) {
-				popularMap.put(c, popularMap.get(c)+1);
+				if (strategy == DictionaryStrategy.HIGHEST_OCURRENCY_FIRST)
+					popularMap.put(c, popularMap.get(c) + 1);
+				else
+					popularMap.put(c, popularMap.get(c) - 1);
 			}
 			
 		}
-		Dictionary dict = Dictionary.invertedDictionary(popularMap);
+		Dictionary dict = new Dictionary(popularMap);
 		
 		System.out.println(popularMap);
 		
