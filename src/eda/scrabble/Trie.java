@@ -124,18 +124,18 @@ public class Trie {
 
 	String bestOptionBy(
 			List<Character> manipulableChars,
-			int actualPosition,/*(Eric v8) Esto sirve para decir cuando va(n) la(s) ficha(s) fija(s), solo falta ver si las pasamos por listas o arrays, etc*/
+			int currentIndex,/*(Eric v8) Esto sirve para decir cuando va(n) la(s) ficha(s) fija(s), solo falta ver si las pasamos por listas o arrays, etc*/
 			int maxLength, /*(Eric v8) Serviria para no buscar de mas, se pueden poner 7 fichas*/
 			Trie trie
 			)
 	{
-		String proWord = null;
+		String resultWord = null;
 		Node node = trie.bestNode(manipulableChars);
 		if (node != null && node.value == END_CHAR)
 			return "";
 		
 		//(Eric v8)Agrega al caracter de fin a las posibilidades
-		if (actualPosition == 2)	manipulableChars.add(END_CHAR);
+		if (currentIndex == 2)	manipulableChars.add(END_CHAR);
 		
 		Character currentChar = null;
 		
@@ -144,16 +144,16 @@ public class Trie {
 			currentChar = node.value;
 			manipulableChars.remove(currentChar);
 			// baja un nivel. Busca la mejor subopcion
-			proWord = bestOptionBy(manipulableChars, actualPosition+1, maxLength, node.nextLetter);
+			resultWord = bestOptionBy(manipulableChars, currentIndex+1, maxLength, node.nextLetter);
 			
 			//(Eric v8)Devuelve el caracter que se borro al array, ya que va a ser reutiizado
 			manipulableChars.add(currentChar);
 			
 			//(Eric v8)Si encontro palabra le agrega el caracter actual al comienzo
-			if (proWord != null) proWord = currentChar.toString().concat(proWord);
+			if (resultWord != null) resultWord = currentChar.toString().concat(resultWord);
 			else	node = trie.bestNode(manipulableChars);
 		}
-		return proWord;
+		return resultWord;
 	}
 
 	/**
