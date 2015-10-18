@@ -9,12 +9,15 @@ import java.util.List;
 import java.util.Map;
 
 import eda.scrabble.Dictionary;
+import eda.scrabble.Trie;
 
 public class InputData{
 	
-	public enum DictionaryStrategy {
-		HIGHEST_OCURRENCY_FIRST,
-		HIGHEST_OCURRENCY_LAST
+	public enum DictionaryFillStrategy {
+		HIGHEST_OCURRENCY,
+		LOWEST_OCURRENCY,
+		HIGHEST_VALUE,
+		LOWEST_VALUE
 	};
 	
 	private InputData() {
@@ -60,7 +63,7 @@ public class InputData{
 		return hMap;
 	}
 
-	public static Dictionary fillDictionary(String filename, DictionaryStrategy strategy) {
+	public static Dictionary fillDictionary(String filename, DictionaryFillStrategy strategy) {
 		Map<Character, Integer> popularMap = new HashMap<Character, Integer>();
 		
 		for (char c = 'A';c <= 'Z';c++)
@@ -72,20 +75,21 @@ public class InputData{
 		for (String word : words) {
 			word = word.toUpperCase();
 			for (char c : word.toCharArray()) {
-				if (strategy == DictionaryStrategy.HIGHEST_OCURRENCY_FIRST)
+				if (strategy == DictionaryFillStrategy.HIGHEST_OCURRENCY)
 					popularMap.put(c, popularMap.get(c) + 1);
 				else
 					popularMap.put(c, popularMap.get(c) - 1);
 			}
 			
 		}
-		Dictionary dict = new Dictionary(popularMap);
 		
-		System.out.println(popularMap);
+		Dictionary dict = new Dictionary(popularMap);
 		
 		for (String word : words) {
 			dict.add(word.toUpperCase());
 		}
+		
+		Trie.moveVertically(dict);
 		
 		return dict;
 	}

@@ -26,7 +26,7 @@ public class Game {
 	private Game() {
 		grid = new Grid();
 		dictionary = InputData.fillDictionary(DICTIONARY_FILENAME,
-				InputData.DictionaryStrategy.HIGHEST_OCURRENCY_FIRST);
+				InputData.DictionaryFillStrategy.HIGHEST_OCURRENCY);
 		characters = InputData.getGameChars(LETTERS_FILENAME);
 	}
 	
