@@ -56,7 +56,8 @@ public class Game {
 	public void start() {
 		//(Martin v7)TODO: Llamaria a un metodo getNext o algo asi
 		/*TODO ACA SE EJECUTA MEJOR OPCION*/
-		System.out.println(dictionary.bestOption(characters, MAX_LENGTH_WORD));
+		System.out.println(dictionary.bestOption(characters, MAX_LENGTH_WORD,null));
+		System.out.println(dictionary.bestOption(characters, MAX_LENGTH_WORD,'C'));
 	}
 	
 	public static Game getInstance() {

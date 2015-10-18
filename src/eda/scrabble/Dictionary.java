@@ -39,11 +39,15 @@ public class Dictionary extends Trie {
 	
 	public String bestOption(
 			List<Character> availableChars,
-			int maxLength /*(Eric v8) Serviria para no buscar de mas, se pueden poner 7 fichas*/
+			int maxLength, /*(Eric v8) Serviria para no buscar de mas, se pueden poner 7 fichas*/
+			Character character
 			)
 	{
 		List<Character> manipulableChars = new ArrayList<Character>(availableChars);
-		String best = bestOptionBy(manipulableChars, 0, maxLength, this);
+		String best = null;
+		for(int i = 0; i < maxLength && best == null; i++){
+			best = bestOption(manipulableChars, 0, maxLength, character, i ,this);
+		}
 		return best;
 	}
 	
