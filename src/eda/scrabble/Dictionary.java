@@ -37,6 +37,12 @@ public class Dictionary extends Trie {
 		return new Dictionary(hierarchy);
 	}
 
+	/**
+	 * Busca la mejor palabra del diccionario
+	 * @param availableChars La lista de chars para formar la palabra
+	 * @param maxLength La longitud maxima de la palabra
+	 * @return la palabra encontrada
+	 */
 	public String bestFirstOption(
 			List<Character> availableChars,
 			int maxLength
@@ -45,6 +51,14 @@ public class Dictionary extends Trie {
 		return bestFirstLimitedOption(availableChars, maxLength, null);
 	}
 
+	/**
+	 * Busca la mejor palabra limitada por el caracter <b>searchedChar</b>, con los caracteres de la lista 
+	 * <b>availableChars</b> y longitud maxima <b>maxLength</b>
+	 * @param availableChars
+	 * @param maxLength
+	 * @param searchedChar Caracter obligado a estar en la palabra (si es null, busca sin preferencia)
+	 * @return
+	 */
 	public String bestFirstLimitedOption(
 			List<Character> availableChars,
 			int maxLength,
@@ -53,18 +67,27 @@ public class Dictionary extends Trie {
 	{
 		return bestLimitedOptionAfter(availableChars, maxLength, searchedChar, null);
 	}
-	
+
+	/**
+	 * Busca la mejor palabra limitada por el caracter <b>searchedChar</b>, con los caracteres de la lista 
+	 * <b>availableChars</b> y longitud maxima <b>maxLength</b>, a partir de la palabra <b>prevWord</b>
+	 * @param availableChars
+	 * @param maxLength
+	 * @param searchedChar Caracter obligado a estar en la palabra (si es null, busca sin preferencia)
+	 * @param prevWord Palabra a partir del cual se busca la siguiente mejor palabra(si es null, busca sin preferencia)
+	 * @return
+	 */
 	public String bestLimitedOptionAfter(
 			List<Character> availableChars,
 			int maxLength, /*(Eric v8) Serviria para no buscar de mas, se pueden poner 7 fichas*/
-			Character character,
+			Character searchedChar,
 			String prevWord
 			)
 	{
 		List<Character> manipulableChars = new ArrayList<Character>(availableChars);
 		String best = null;
 		for(int i = 0; i < maxLength && best == null; i++){
-			best = bestOption(manipulableChars, 0, maxLength, character, i, prevWord, this);
+			best = bestOption(manipulableChars, 0, maxLength, searchedChar, i, prevWord, this);
 		}
 		return best;
 	}

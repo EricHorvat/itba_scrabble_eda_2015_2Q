@@ -131,6 +131,18 @@ public class Trie {
 		return null;
 	}
 
+	/**
+	 * Busca la mejor palabra limitada por el caracter <b>searchedChar</b> en la posicion<><>, con los caracteres de la lista 
+	 * <b>manipulableChars</b> y longitud maxima <b>maxLength</b>, a partir de la palabra <b>prevWord</b>
+	 * @param manipulableChars
+	 * @param currentIndex
+	 * @param maxLength
+	 * @param searchedChar Caracter obligado a estar en la palabra (si es null, busca sin preferencia)
+	 * @param searchedPosition posicion en la que se desea que este el caracter
+	 * @param prevWord Palabra a partir del cual se busca la siguiente mejor palabra(si es null, busca sin preferencia)
+	 * @param trie Trie en el que se busca
+	 * @return
+	 */
 	String bestOption(
 			List<Character> manipulableChars,
 			int currentIndex,/*(Eric v8) Esto sirve para decir cuando va(n) la(s) ficha(s) fija(s), solo falta ver si las pasamos por listas o arrays, etc*/
@@ -155,7 +167,7 @@ public class Trie {
 					resultWord = bestOption(manipulableChars, currentIndex+1, maxLength, searchedChar, searchedPosition, prevWord.substring(1, prevWord.length()),node.nextLetter);
 					if (resultWord != null) {
 						resultWord = c.toString().concat(resultWord);
-						if(searchedChar!= null && !resultWord.contains(searchedChar.toString())){
+						if(searchedChar!= null && searchedPosition == currentIndex && !(resultWord.charAt(currentIndex)==searchedChar)){
 							resultWord = null;
 						}
 							
@@ -190,6 +202,7 @@ public class Trie {
 		return resultWord;
 	}
 	
+	//Si queres lo comento, reemplace por la seccion de codigo para no repetir
 	public String nextOption(
 			List<Character> manipulableChars,
 			int currentIndex,/*(Eric v8) Esto sirve para decir cuando va(n) la(s) ficha(s) fija(s), solo falta ver si las pasamos por listas o arrays, etc*/
