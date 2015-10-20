@@ -36,20 +36,39 @@ public class Dictionary extends Trie {
 		}
 		return new Dictionary(hierarchy);
 	}
+
+	public String bestFirstOption(
+			List<Character> availableChars,
+			int maxLength
+			)
+	{
+		return bestFirstLimitedOption(availableChars, maxLength, null);
+	}
+
+	public String bestFirstLimitedOption(
+			List<Character> availableChars,
+			int maxLength,
+			Character searchedChar
+			)
+	{
+		return bestLimitedOptionAfter(availableChars, maxLength, searchedChar, null);
+	}
 	
-	public String bestOption(
+	public String bestLimitedOptionAfter(
 			List<Character> availableChars,
 			int maxLength, /*(Eric v8) Serviria para no buscar de mas, se pueden poner 7 fichas*/
-			Character character
+			Character character,
+			String prevWord
 			)
 	{
 		List<Character> manipulableChars = new ArrayList<Character>(availableChars);
 		String best = null;
 		for(int i = 0; i < maxLength && best == null; i++){
-			best = bestOption(manipulableChars, 0, maxLength, character, i ,this);
+			best = bestOption(manipulableChars, 0, maxLength, character, i, prevWord, this);
 		}
 		return best;
 	}
+	
 	
 	
 }

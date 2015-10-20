@@ -137,13 +137,37 @@ public class Trie {
 			int maxLength, /*(Eric v8) Serviria para no buscar de mas, se pueden poner 7 fichas*/
 			Character searchedChar,
 			int searchedPosition,
+			String prevWord,//Se pide una palabra y se busca la mejor soludcion DESPUES de esta
 			Trie trie
 			)
-	{
+	{		
 		String resultWord = null;
 		Node node = null;
-		if (searchedPosition!=currentIndex || searchedChar == null)	node = trie.bestNode(manipulableChars);
-			else node = trie.contains(searchedChar);
+		if(prevWord!=null)
+		{
+				Character c = prevWord.charAt(0);
+				node = trie.contains(c);//TODO OJO, NO CONTROLO QUE LA PALABRA INGREADA NO ESTE EN EL TRIE (agregar un if != null) 
+				if(prevWord.length()==1)
+				{
+					node = trie.bestNode(manipulableChars,node.next);
+					prevWord =null;
+				}else{
+					resultWord = bestOption(manipulableChars, currentIndex+1, maxLength, searchedChar, searchedPosition, prevWord.substring(1, prevWord.length()),node.nextLetter);
+					if (resultWord != null) {
+						resultWord = c.toString().concat(resultWord);
+						if(searchedChar!= null && !resultWord.contains(searchedChar.toString())){
+							resultWord = null;
+						}
+							
+					}
+					else	node = trie.bestNode(manipulableChars,node.next);
+				}
+		}
+		else if (searchedPosition!=currentIndex || searchedChar == null){
+			node = trie.bestNode(manipulableChars);
+		}else{
+			node = trie.contains(searchedChar);
+		}
 		
 		if (node != null && node.value == END_CHAR)
 			return "";
@@ -154,19 +178,33 @@ public class Trie {
 		Character currentChar = null;
 		
 		while (node != null && resultWord == null) {
-			
 			currentChar = node.value;
-			manipulableChars.remove(currentChar);
 			// baja un nivel. Busca la mejor subopcion
-			resultWord = bestOption(manipulableChars, currentIndex+1, maxLength, searchedChar, searchedPosition, node.nextLetter);
-			
-			//(Eric v8)Devuelve el caracter que se borro al array, ya que va a ser reutiizado
-			manipulableChars.add(currentChar);
+			resultWord = nextOption(manipulableChars, currentIndex, maxLength, searchedChar, searchedPosition, node);
 			
 			//(Eric v8)Si encontro palabra le agrega el caracter actual al comienzo
+			//(Eric v13) Esto seria joya si se agrega a nextOption, pero no se puede
 			if (resultWord != null) resultWord = currentChar.toString().concat(resultWord);
 			else	node = trie.bestNode(manipulableChars,node.next);
 		}
+		return resultWord;
+	}
+	
+	public String nextOption(
+			List<Character> manipulableChars,
+			int currentIndex,/*(Eric v8) Esto sirve para decir cuando va(n) la(s) ficha(s) fija(s), solo falta ver si las pasamos por listas o arrays, etc*/
+			int maxLength, /*(Eric v8) Serviria para no buscar de mas, se pueden poner 7 fichas*/
+			Character searchedChar,
+			int searchedPosition,
+			Node node){
+		
+		Character currentChar = node.value;
+		manipulableChars.remove(currentChar);
+		// baja un nivel. Busca la mejor subopcion
+		String resultWord = bestOption(manipulableChars, currentIndex+1, maxLength, searchedChar, searchedPosition, null,  node.nextLetter);
+		
+		//(Eric v8)Devuelve el caracter que se borro al array, ya que va a ser reutiizado
+		manipulableChars.add(currentChar);
 		return resultWord;
 	}
 
