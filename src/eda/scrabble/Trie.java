@@ -1,11 +1,12 @@
 package eda.scrabble;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class Trie {
 	
-	private static final char END_CHAR = 0;
+	protected static final char END_CHAR = 0;
 	
 	private static final boolean DEBUG = true;
 	
@@ -118,7 +119,31 @@ public class Trie {
 	public Node contains(char c) {
 		return contains(first, c);
 	}
+	@Override
+	public String toString() {
+		
+		List<String> l = new ArrayList<String>();
+		toString(l, first, "");
+		return l.toString();
+	}
+	
+	private void toString(List<String> l, Node node, String acum){
+		if(node.value.equals(END_CHAR))
+			l.add(acum);
+		
+		if(node.nextLetter!=null)
+			{
 
+			String s2 = new String(acum); 
+			toString(l,node.nextLetter.first,s2.concat(node.value.toString()));
+		}
+		if(node.next!=null)
+		{
+			String s = new String(acum); 
+			toString(l,node.next,s);
+		}
+	}
+	
 	public Trie getChildren(Character c) {
 		return getChildren(first, c);
 	}
@@ -153,6 +178,7 @@ public class Trie {
 			Trie trie
 			)
 	{		
+		
 		String resultWord = null;
 		Node node = null;
 		if(prevWord!=null)
@@ -169,6 +195,7 @@ public class Trie {
 						resultWord = c.toString().concat(resultWord);
 						if(searchedChar!= null && searchedPosition == currentIndex && !(resultWord.charAt(currentIndex)==searchedChar)){
 							resultWord = null;
+							node = trie.bestNode(manipulableChars,node.next);
 						}
 							
 					}
@@ -179,6 +206,8 @@ public class Trie {
 			node = trie.bestNode(manipulableChars);
 		}else{
 			node = trie.contains(searchedChar);
+			if(!manipulableChars.contains(searchedChar))
+				node = trie.bestNode(manipulableChars);
 		}
 		
 		if (node != null && node.value == END_CHAR)
@@ -196,9 +225,17 @@ public class Trie {
 			
 			//(Eric v8)Si encontro palabra le agrega el caracter actual al comienzo
 			//(Eric v13) Esto seria joya si se agrega a nextOption, pero no se puede
-			if (resultWord != null) resultWord = currentChar.toString().concat(resultWord);
+			if (resultWord != null) {
+				resultWord = currentChar.toString().concat(resultWord);
+				if(searchedChar!= null && searchedPosition == currentIndex && !(resultWord.charAt(0)==searchedChar)){
+					resultWord = null;
+					node = trie.bestNode(manipulableChars,node.next);
+				}
+					
+			}
 			else	node = trie.bestNode(manipulableChars,node.next);
 		}
+
 		return resultWord;
 	}
 	
@@ -290,11 +327,6 @@ public class Trie {
 		
 	}
 	
-	@Override
-	public String toString() {
-		
-		
-		return super.toString();
-	}
+
 	
 }

@@ -89,7 +89,7 @@ public class InputData{
 			dict.add(word.toUpperCase());
 		}
 		
-		Trie.moveVertically(dict);
+		//Trie.moveVertically(dict);
 		
 		return dict;
 	}

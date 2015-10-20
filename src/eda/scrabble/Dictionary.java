@@ -84,14 +84,32 @@ public class Dictionary extends Trie {
 			String prevWord
 			)
 	{
-		List<Character> manipulableChars = new ArrayList<Character>(availableChars);
+		//List<Character> manipulableChars = new ArrayList<Character>(availableChars);
 		String best = null;
-		for(int i = 0; i < maxLength && best == null; i++){
-			best = bestOption(manipulableChars, 0, maxLength, searchedChar, i, prevWord, this);
+		for( int i =0;i < maxLength && best == null; i++){	
+			best = bestOption(availableChars, 0, maxLength, searchedChar, i, prevWord, this);	
+			while(best != null && searchedChar != null && !best.contains(searchedChar.toString())){
+				best = bestOption(availableChars, 0, maxLength, searchedChar, i, best, this);
+			}
+		}
+		while(availableChars.contains((Character)END_CHAR))
+		{
+			availableChars.remove((Character)END_CHAR);
+		}
+		if(best!= null)
+		{
+			for (int i = 0; i < best.length(); i++) {
+			availableChars.remove(availableChars.size()-1);
+			}
+			if(searchedChar!=null)
+				availableChars.add(searchedChar);
 		}
 		return best;
 	}
 	
-	
+	@Override
+	public String toString() {
+		return super.toString();
+	}
 	
 }
