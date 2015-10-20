@@ -56,6 +56,11 @@ public class Game {
 	public void start() {
 		//(Martin v7)TODO: Llamaria a un metodo getNext o algo asi
 		/*TODO ACA SE EJECUTA MEJOR OPCION*/
+		
+		String s = dictionary.bestFirstOption(characters, 7);
+		addWord((grid.GRID_SIZE-s.length())/2, (grid.GRID_SIZE-s.length())/2, Direction.HORIZONTAL, s);
+		grid.print();
+		
 	//	System.out.println(dictionary.bestFirstOption(characters, MAX_LENGTH_WORD));
 	//	System.out.println(dictionary.bestFirstLimitedOption(characters, MAX_LENGTH_WORD,'P'));
 		System.out.println(dictionary.bestLimitedOptionAfter(characters, MAX_LENGTH_WORD,'A', "PEDO"));

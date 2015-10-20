@@ -2,7 +2,7 @@ package eda.scrabble;
 
 public class Grid {
 
-	private final static int GRID_SIZE = 15;
+	public final static int GRID_SIZE = 15;
 	private final static char EMPTY_SPACE = ' ';
 	
 	char[][] grid = new char[GRID_SIZE][GRID_SIZE];
@@ -24,12 +24,21 @@ public class Grid {
 	}
 	
 	public void print() {
+		System.out.print('+');
+		for (int i = 0; i < GRID_SIZE; i++)
+			System.out.print('-');
+		System.out.println('+');
 		for (int i = 0; i < GRID_SIZE; i++) {
+			System.out.print('|');;
 			for (int j = 0; j < GRID_SIZE; j++) {
 				System.out.print(grid[i][j]);
 			}
-			System.out.println();
+			System.out.println('|');
 		}
+		System.out.print('+');
+		for (int i = 0; i < GRID_SIZE; i++)
+			System.out.print('-');
+		System.out.println('+');
 	}
 	
 	public int size() {
