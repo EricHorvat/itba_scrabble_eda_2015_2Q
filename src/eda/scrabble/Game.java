@@ -75,6 +75,9 @@ public class Game {
 	
 	private final static String DICTIONARY_FILENAME = "diccionario.txt";
 	private final static String LETTERS_FILENAME = "letras.txt";
+	private final static String CHAR_VALUE_FILENAME = "charValue.txt";
+	
+	public final static Map<Character,Integer> VALUE_MAP = InputData.fillValueMap(CHAR_VALUE_FILENAME);
 	
 	private final static int MAX_LENGTH_WORD = 7;
 	
@@ -101,7 +104,7 @@ public class Game {
 	}
 	
 	//(Martin v7) TODO: El dictionary tendria que hacer una integracion con esto
-	private void addWord(int x, int y, Direction d, String word) {
+	private void addWord(int x, int y, Direction d, String word) throws IllegalArgumentException {
 		
 		if (x < 0 || y < 0)
 			throw new IllegalArgumentException();
@@ -112,8 +115,35 @@ public class Game {
 		
 		switch (d) {
 			case HORIZONTAL:
-				for (int i = x; i < x+word.length(); i++)
+				if (grid.get(x-1, y) != Grid.EMPTY_SPACE)
+					throw new IllegalArgumentException();
+				if (grid.get(x+word.length(), y) != Grid.EMPTY_SPACE)
+					throw new IllegalArgumentException();
+				for (int i = x; i < x+word.length(); i++) {
+					if (grid.get(i, y+1) != Grid.EMPTY_SPACE) {
+						String s = ""+word.charAt(i-x);
+						int j = 0;
+						while (grid.get(i-x, y+j) != Grid.EMPTY_SPACE) {
+							s += grid.get(i-x, y+j);
+							j++;
+						}
+						if (!dictionary.contains(s)) {
+							throw new IllegalArgumentException();
+						}
+					}
+					if (grid.get(i, y-1) != Grid.EMPTY_SPACE) {
+						String s = ""+word.charAt(i-x);
+						int j = 0;
+						while (grid.get(i-x, y-j) != Grid.EMPTY_SPACE) {
+							s += grid.get(i-x, y-j);
+							j++;
+						}
+						if (!dictionary.contains(s)) {
+							throw new IllegalArgumentException();
+						}
+					}
 					grid.set(i, y, word.charAt(i-x));
+				}
 				break;
 			case VERTICAL:
 				for (int i = y; i < y+word.length(); i++)
@@ -185,13 +215,11 @@ public class Game {
 		//(Martin v7)TODO: Llamaria a un metodo getNext o algo asi
 		/*TODO ACA SE EJECUTA MEJOR OPCION*/
 		
-		System.out.println(dictionary.bestLimitedOptionAfter(characters, MAX_LENGTH_WORD,'P', "PEDO"));
-		
 		String s = dictionary.bestFirstOption(characters, 7);
 		
 		System.out.println(s);
-		int x = (grid.GRID_SIZE-s.length())/2;
-		int y = grid.GRID_SIZE/2;
+		int x = (grid.size()-s.length())/2;
+		int y = grid.size()/2;
 		addWord(x, y, Direction.HORIZONTAL, s);
 		grid.print();
 		int i = 0;

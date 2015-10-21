@@ -3,7 +3,7 @@ package eda.scrabble;
 public class Grid {
 
 	public final static int GRID_SIZE = 15;
-	private final static char EMPTY_SPACE = ' ';
+	public final static char EMPTY_SPACE = ' ';
 	
 	char[][] grid = new char[GRID_SIZE][GRID_SIZE];
 	
@@ -15,11 +15,23 @@ public class Grid {
 		}
 	}
 	
+	public int getScore() {
+		int sum = 0;
+		for (int i = 0; i < GRID_SIZE; i++) {
+			for (int j = 0; j < GRID_SIZE; j++) {
+				sum += grid[i][j] == EMPTY_SPACE ? 0 : Game.VALUE_MAP.get(grid[i][j]);
+			}
+		}
+		return sum;
+	}
+	
 	public void set(int x, int y, char l) {
 		grid[y][x] = l;
 	}
 	
 	public char get(int x, int y) {
+		if (x < 0 || y < 0 || x >= GRID_SIZE || y >= GRID_SIZE)
+			return EMPTY_SPACE;
 		return grid[y][x];
 	}
 	
