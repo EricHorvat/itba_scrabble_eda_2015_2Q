@@ -108,17 +108,18 @@ public class Trie {
 		first = node;
 	}
 
-	private Node contains(Node node, char c) {
+	private Node containingCharacter(Node node, char c) {
 		if (node.value.equals(c))
 			return node;
 		if (node.next != null)
-			return contains(node.next, c);
+			return containingCharacter(node.next, c);
 		return null;
 	}
 	
-	public Node contains(char c) {
-		return contains(first, c);
+	public Node containingCharacter(char c) {
+		return containingCharacter(first, c);
 	}
+	
 	@Override
 	public String toString() {
 		
@@ -142,6 +143,31 @@ public class Trie {
 			String s = new String(acum); 
 			toString(l,node.next,s);
 		}
+	}
+	
+
+	public boolean contains(String s) {
+		
+		return contains(first,s);
+	}
+	
+	private boolean contains(Node node, String s){
+		if(node.value.equals(END_CHAR)){
+				if(s.length()==0)
+					return true;
+		}else{
+			if(node.value.equals(s.charAt(0))){
+				if(node.nextLetter!=null)
+				{
+					String s2 = s.substring(1, s.length());
+					return node.nextLetter.contains(s2);
+				}
+			}
+			else
+				if(node.next!=null)
+					return contains(node.next,s);
+		}
+		return false;
 	}
 	
 	public Trie getChildren(Character c) {
@@ -185,7 +211,7 @@ public class Trie {
 		{
 				Character c = prevWord.charAt(0);
 				//TODO OJO, NO CONTROLO QUE LA PALABRA INGREADA NO ESTE EN EL TRIE (agregar un if != null) 
-				node = trie.contains(c);
+				node = trie.containingCharacter(c);
 				if(prevWord.length()==1)
 				{
 					node = trie.bestNode(manipulableChars,node.next);
@@ -206,7 +232,7 @@ public class Trie {
 		else if (searchedPosition!=currentIndex || searchedChar == null){
 			node = trie.bestNode(manipulableChars);
 		}else{
-			node = trie.contains(searchedChar);
+			node = trie.containingCharacter(searchedChar);
 			if(!manipulableChars.contains(searchedChar))
 				node = trie.bestNode(manipulableChars);
 		}
