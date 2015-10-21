@@ -156,7 +156,8 @@ public class Trie {
 				if(s.length()==0)
 					return true;
 		}else{
-			if(node.value.equals(s.charAt(0))){
+			if(s.equals("")){}
+			else if (node.value.equals(s.charAt(0))){
 				if(node.nextLetter!=null)
 				{
 					String s2 = s.substring(1, s.length());

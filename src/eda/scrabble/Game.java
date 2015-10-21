@@ -112,15 +112,16 @@ public class Game {
 			throw new IllegalArgumentException();
 		if (word == null)
 			throw new IllegalArgumentException();
-		
+		System.out.println("inserting "+word+" at x:"+x+" y:"+y+" "+d);
 		switch (d) {
 			case HORIZONTAL:
 				if (grid.get(x-1, y) != Grid.EMPTY_SPACE)
-					throw new IllegalArgumentException();
+					throw new IllegalArgumentException("Horizontal failed left");
 				if (grid.get(x+word.length(), y) != Grid.EMPTY_SPACE)
-					throw new IllegalArgumentException();
+					throw new IllegalArgumentException("horizontal failed right");
 				for (int i = x; i < x+word.length(); i++) {
-					if (grid.get(i, y+1) != Grid.EMPTY_SPACE) {
+					Boolean b = used.get(new Coordinate(i, y));
+					if (grid.get(i, y+1) != Grid.EMPTY_SPACE && (b == null || b == false)) {
 						String s = ""+word.charAt(i-x);
 						int j = 0;
 						while (grid.get(i-x, y+j) != Grid.EMPTY_SPACE) {
@@ -128,10 +129,15 @@ public class Game {
 							j++;
 						}
 						if (!dictionary.contains(s)) {
-							throw new IllegalArgumentException();
+							for (j = i; j >= x; j--) {
+								Boolean bb = used.get(new Coordinate(j, y));
+								if (bb != null && bb == true) continue;
+								grid.set(j, y, Grid.EMPTY_SPACE);
+							}
+							throw new IllegalArgumentException("horizontal failed middle top");
 						}
 					}
-					if (grid.get(i, y-1) != Grid.EMPTY_SPACE) {
+					if (grid.get(i, y-1) != Grid.EMPTY_SPACE && (b == null || b == false)) {
 						String s = ""+word.charAt(i-x);
 						int j = 0;
 						while (grid.get(i-x, y-j) != Grid.EMPTY_SPACE) {
@@ -139,15 +145,63 @@ public class Game {
 							j++;
 						}
 						if (!dictionary.contains(s)) {
-							throw new IllegalArgumentException();
+							for (j = i; j >= x; j--) {
+								Boolean bb = used.get(new Coordinate(j, y));
+								if (bb != null && bb == true) continue;
+								grid.set(j, y, Grid.EMPTY_SPACE);
+							}
+							throw new IllegalArgumentException("horizontal failed middle bottom");
 						}
 					}
 					grid.set(i, y, word.charAt(i-x));
 				}
 				break;
 			case VERTICAL:
-				for (int i = y; i < y+word.length(); i++)
+				if (grid.get(x, y-1) != Grid.EMPTY_SPACE) {
+					throw new IllegalArgumentException("vertical failed top found "+grid.get(x, y-1));
+				}
+				if (grid.get(x,word.length()+y) != Grid.EMPTY_SPACE) {
+					throw new IllegalArgumentException("vertical failed bottom found "+grid.get(x, word.length()+y));
+				}
+				for (int i = y; i < y+word.length(); i++) {
+					// Si esta usado salteo
+					Boolean b = used.get(new Coordinate(x, i));
+					if (grid.get(x+1, i) != Grid.EMPTY_SPACE && (b == null || b == false)) {
+						String s = ""+word.charAt(i-y);
+						int j = 0;
+						while (grid.get(x+j,i-y) != Grid.EMPTY_SPACE) {
+							s += grid.get(x+j,i-y);
+							j++;
+						}
+						if (!dictionary.contains(s)) {
+							for (j = i-1; j >= y; j--) {
+								Boolean bb = used.get(new Coordinate(x, j));
+								System.out.println("bb:"+bb+" x:"+x+" y:"+j);
+								//if (bb == null || bb == false)
+									grid.set(x, j, Grid.EMPTY_SPACE);
+							}
+							throw new IllegalArgumentException("vertical failed middle right");
+						}
+					}
+					if (grid.get(x-1, i) != Grid.EMPTY_SPACE && (b == null || b == false)) {
+						String s = ""+word.charAt(i-y);
+						int j = 0;
+						while (grid.get(x-j,i-y) != Grid.EMPTY_SPACE) {
+							s += grid.get(x-j,i-y);
+							j++;
+						}
+						if (!dictionary.contains(s)) {
+							for (j = i-1; j >= y; j--) {
+								Boolean bb = used.get(new Coordinate(x, j));
+								System.out.println("bb:"+bb+" x:"+x+" y:"+j);
+								//if (bb == null || bb == false)
+									grid.set(x, j, Grid.EMPTY_SPACE);
+							}
+							throw new IllegalArgumentException("vertical failed middle left");
+						}
+					}
 					grid.set(x, i, word.charAt(i-y));
+				} 
 				break;
 		}
 		
@@ -228,9 +282,10 @@ public class Game {
 		System.out.println(s + "("+x+","+y+")");
 		
 		String aux  = null;
-		while (s != null ) {
+		while (s != null) {
 			aux = null;
 			for (i = 0; i < s.length() && aux == null; i++) {
+				System.out.println("starting for with i: "+i + " s: "+s+" aux>: "+aux );
 				boolean cont=false;
 				Character c = (Character)s.charAt(i);
 				if (j == Direction.VERTICAL) {
@@ -243,42 +298,69 @@ public class Game {
 					if (b != null && b == true)
 						cont = true;
 				}
-				if (!cont)
+				if (!cont) {
+					System.out.println("looking for word with> "+c);
 					aux = dictionary.bestLimitedOptionAfter(characters, MAX_LENGTH_WORD, c, null);
-			}
-			if (aux == null)
-				break;
-			if (j == Direction.VERTICAL) {
-				used.put(new Coordinate(x, y+i-1), true);
-				System.out.println("Setting ("+(x)+","+(y+i-1)+")");
-			} else {
-				used.put(new Coordinate(x+i-1, y), true);
-				System.out.println("Setting ("+(x+i-1)+","+(y)+")");
-			}
-			int p = aux.indexOf(s.charAt(i-1));
-			s = aux;
-			if (j == Direction.VERTICAL) {
-				try {
-					addWord(x-p, y+i-1, Direction.HORIZONTAL, s);
-				} catch (IllegalArgumentException ex) {
-					System.out.println(ex.getStackTrace());
+					
+					System.out.println("ack "+aux);
+					if (aux == null) {
+						if (i == s.length()-1) {
+							s = null;
+							break;
+						}
+						continue;
+					}
+					if (j == Direction.VERTICAL) {
+						used.put(new Coordinate(x, y+i), true);
+						System.out.println("Setting ("+(x)+","+(y+i)+")");
+					} else {
+						used.put(new Coordinate(x+i, y), true);
+						System.out.println("Setting ("+(x+i)+","+(y)+")");
+					}
+					int p = aux.indexOf(s.charAt(i));
+					String back = s;
+					s = aux;
+					System.out.println("j is "+ j);
+					if (j == Direction.VERTICAL) {
+						boolean cut = false;
+						try {
+							addWord(x-p, y+i, Direction.HORIZONTAL, s);
+						} catch (IllegalArgumentException ex) {
+							System.out.println(ex.getStackTrace().toString());
+							System.out.println(ex.getMessage());
+							s = back;
+							cut = true;
+						}
+						
+						j = Direction.HORIZONTAL;
+						x = x-p;
+						y = y+i;
+						if (!cut)
+							i = 0;
+					} else {
+						boolean cut = false;
+						try {
+							addWord(x+i, y-p, Direction.VERTICAL, s);
+						} catch (IllegalArgumentException ex) {
+							System.out.println(ex.getStackTrace().toString());
+							System.out.println(ex.getMessage());
+							s = back;
+							cut = true;
+						}
+						
+						x = x+i;
+						j = Direction.VERTICAL;
+						y = y - p;
+						System.out.println(s + "("+x+","+y+")");
+						if (!cut)
+							i = 0;
+					}
+					grid.print();
+					System.out.println(s);
+					
 				}
-				j = Direction.HORIZONTAL;
-				x = x-p;
-				y = y+i-1;
-			} else {
-				try {
-					addWord(x+i-1, y-p, Direction.VERTICAL, s);
-				} catch (IllegalArgumentException ex) {
-					System.out.println(ex.getStackTrace());
-				}
-				x = x+i-1;
-				j = Direction.VERTICAL;
-				y = y - p;
-				System.out.println(s + "("+x+","+y+")");
 			}
-			grid.print();
-			System.out.println(s);
+			
 		}
 		
 	}
