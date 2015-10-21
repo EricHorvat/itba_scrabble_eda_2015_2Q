@@ -184,7 +184,8 @@ public class Trie {
 		if(prevWord!=null)
 		{
 				Character c = prevWord.charAt(0);
-				node = trie.contains(c);//TODO OJO, NO CONTROLO QUE LA PALABRA INGREADA NO ESTE EN EL TRIE (agregar un if != null) 
+				//TODO OJO, NO CONTROLO QUE LA PALABRA INGREADA NO ESTE EN EL TRIE (agregar un if != null) 
+				node = trie.contains(c);
 				if(prevWord.length()==1)
 				{
 					node = trie.bestNode(manipulableChars,node.next);

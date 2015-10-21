@@ -1,6 +1,7 @@
 package eda.scrabble;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -184,9 +185,10 @@ public class Game {
 		//(Martin v7)TODO: Llamaria a un metodo getNext o algo asi
 		/*TODO ACA SE EJECUTA MEJOR OPCION*/
 		
+		System.out.println(dictionary.bestLimitedOptionAfter(characters, MAX_LENGTH_WORD,'P', "PEDO"));
 		
 		String s = dictionary.bestFirstOption(characters, 7);
-
+		
 		System.out.println(s);
 		int x = (grid.GRID_SIZE-s.length())/2;
 		int y = grid.GRID_SIZE/2;
@@ -243,9 +245,6 @@ public class Game {
 			System.out.println(s);
 		}
 		
-	//	System.out.println(dictionary.bestFirstOption(characters, MAX_LENGTH_WORD));
-		//System.out.println(dictionary.bestFirstLimitedOption(characters, MAX_LENGTH_WORD,'D'));
-		//System.out.println(dictionary.bestLimitedOptionAfter(characters, MAX_LENGTH_WORD,'A', "NADIE"));
 	}
 	
 	public static Game getInstance() {
