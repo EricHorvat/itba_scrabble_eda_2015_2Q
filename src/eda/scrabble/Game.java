@@ -258,12 +258,20 @@ public class Game {
 			int p = aux.indexOf(s.charAt(i-1));
 			s = aux;
 			if (j == Direction.VERTICAL) {
-				addWord(x-p, y+i-1, Direction.HORIZONTAL, s);
+				try {
+					addWord(x-p, y+i-1, Direction.HORIZONTAL, s);
+				} catch (IllegalArgumentException ex) {
+					System.out.println(ex.getStackTrace());
+				}
 				j = Direction.HORIZONTAL;
 				x = x-p;
 				y = y+i-1;
 			} else {
-				addWord(x+i-1, y-p, Direction.VERTICAL, s);
+				try {
+					addWord(x+i-1, y-p, Direction.VERTICAL, s);
+				} catch (IllegalArgumentException ex) {
+					System.out.println(ex.getStackTrace());
+				}
 				x = x+i-1;
 				j = Direction.VERTICAL;
 				y = y - p;
