@@ -1,6 +1,8 @@
 package eda.scrabble;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +15,6 @@ public class Game {
 		public int y;
 
 		public Coordinate(int x, int y) {
-			// TODO Auto-generated constructor stubç
 			this.x = x;
 			this.y = y;
 		}
@@ -45,6 +46,32 @@ public class Game {
 		
 	}
 	
+	private class WordXY {
+		
+		public String word;
+		public Coordinate pos;
+		public Direction direction;
+		
+		public WordXY(String word, Coordinate pos, Direction d) {
+			this.word = word;
+			this.pos = pos;
+			this.direction = d;
+		}
+		
+		public boolean has(int x, int y) {
+			if (this.direction == Direction.HORIZONTAL) {
+				return this.pos.y == y && this.pos.x <= x && x <= this.pos.x + word.length();
+			} else {
+				return this.pos.x == x && this.pos.y <= y && y <= this.pos.y + word.length();
+			}
+		}
+		
+		public boolean has(Coordinate coord) {
+			return has(coord.x, coord.y);
+		}
+		
+	}
+	
 	private final static String DICTIONARY_FILENAME = "diccionario.txt";
 	private final static String LETTERS_FILENAME = "letras.txt";
 	
@@ -56,6 +83,8 @@ public class Game {
 	private Dictionary dictionary;
 	private List<Character> characters;
 	private Map<Coordinate,Boolean> used = new HashMap<Coordinate,Boolean>();
+	
+	private List<WordXY> words = new ArrayList<WordXY>();
 	
 	public enum Direction {
 		HORIZONTAL,
@@ -89,6 +118,64 @@ public class Game {
 				for (int i = y; i < y+word.length(); i++)
 					grid.set(x, i, word.charAt(i-y));
 				break;
+		}
+		
+		this.words.add(new WordXY(word, new Coordinate(x, y), d));
+		
+	}
+	
+	private void removeWord(WordXY word) {
+		
+		
+		words.remove(word);
+		removeWordVisually(word);
+	}
+	
+	private void removeWordAt(int x, int y) {
+		
+		int count = 0;
+		
+		WordXY remove = null;
+		
+		for (WordXY word : words) {
+			
+			if (word.has(x, y)) {
+				count++;
+				remove = word;
+			}
+			
+		}
+		if (count >= 2) {
+			throw new IllegalStateException();
+		}
+		
+		if (count == 1) {
+			removeWordVisually(remove);
+			words.remove(remove);
+		}
+		
+	}
+	
+	private void removeWordAt(Coordinate coord) {
+		removeWordAt(coord.x, coord.y);
+	}
+	
+	private void removeWordVisually(WordXY word) {
+		
+		if (word.direction == Direction.HORIZONTAL) {
+			for (int i = 0; i < word.word.length(); i++) {
+				Boolean b = used.get(new Coordinate(word.pos.x+i, word.pos.y));
+				if (b == null || b == false) {
+					grid.set(word.pos.x+i, word.pos.y, ' ');
+				}
+			}
+		} else {
+			for (int i = 0; i < word.word.length(); i++) {
+				Boolean b = used.get(new Coordinate(word.pos.x, word.pos.y+i));
+				if (b == null || b == false) {
+					grid.set(word.pos.x, word.pos.y+i, ' ');
+				}
+			}
 		}
 		
 	}
@@ -141,7 +228,10 @@ public class Game {
 			int p = aux.indexOf(s.charAt(i-1));
 			s = aux;
 			if (j == Direction.VERTICAL) {
-				addWord(x, (grid.GRID_SIZE-s.length())/2, Direction.HORIZONTAL, s);
+				addWord(x-p, y+i-1, Direction.HORIZONTAL, s);
+				j = Direction.HORIZONTAL;
+				x = x-p;
+				y = y+i-1;
 			} else {
 				addWord(x+i-1, y-p, Direction.VERTICAL, s);
 				x = x+i-1;
