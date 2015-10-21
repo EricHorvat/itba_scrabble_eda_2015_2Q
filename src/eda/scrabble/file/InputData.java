@@ -9,11 +9,13 @@ import java.util.List;
 import java.util.Map;
 
 import eda.scrabble.Dictionary;
+import eda.scrabble.Game;
 import eda.scrabble.Trie;
 
 public class InputData{
 	
 	public enum DictionaryFillStrategy {
+		NONE,
 		HIGHEST_OCURRENCY,
 		LOWEST_OCURRENCY,
 		HIGHEST_VALUE,
@@ -72,18 +74,42 @@ public class InputData{
 		
 		List<String> words = readAllLines(filename);
 		
-		for (String word : words) {
-			word = word.toUpperCase();
-			for (char c : word.toCharArray()) {
-				if (strategy == DictionaryFillStrategy.HIGHEST_OCURRENCY)
-					popularMap.put(c, popularMap.get(c) + 1);
-				else
-					popularMap.put(c, popularMap.get(c) - 1);
+		Dictionary dict;
+		
+		if (strategy == DictionaryFillStrategy.HIGHEST_VALUE || strategy == DictionaryFillStrategy.LOWEST_VALUE) {
+			
+			dict = new Dictionary(Game.VALUE_MAP);
+			
+		} else {
+		
+			for (String word : words) {
+				//TODO: falta la validacion de si me alcanzan las letras
+				if (2 <= word.length() && word.length() <= 7) {
+					word = word.toUpperCase();
+					for (char c : word.toCharArray()) {
+						switch (strategy) {
+						case NONE:
+							// Todos son iguales
+							popularMap.put(c, 0);
+							break;
+						case LOWEST_OCURRENCY:
+							popularMap.put(c, popularMap.get(c) + 1);
+							break;
+						case HIGHEST_OCURRENCY:
+							popularMap.put(c, popularMap.get(c) - 1);
+							break;
+						default:
+							break;
+						}
+					}
+				} else {
+					words.remove(word);
+				}
+				
 			}
 			
+			dict = new Dictionary(popularMap);
 		}
-		
-		Dictionary dict = new Dictionary(popularMap);
 		
 		for (String word : words) {
 			dict.add(word.toUpperCase());

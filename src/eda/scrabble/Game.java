@@ -1,9 +1,7 @@
 package eda.scrabble;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -73,8 +71,8 @@ public class Game {
 		
 	}
 	
-	private final static String DICTIONARY_FILENAME = "diccionario.txt";
-	private final static String LETTERS_FILENAME = "letras.txt";
+	private final static String DICTIONARY_FILENAME = "dic2.txt";
+	private final static String LETTERS_FILENAME = "l2.txt";
 	private final static String CHAR_VALUE_FILENAME = "charValue.txt";
 	
 	public final static Map<Character,Integer> VALUE_MAP = InputData.fillValueMap(CHAR_VALUE_FILENAME);
@@ -98,7 +96,7 @@ public class Game {
 	private Game() {
 		grid = new Grid();
 		dictionary = InputData.fillDictionary(DICTIONARY_FILENAME,
-				InputData.DictionaryFillStrategy.LOWEST_OCURRENCY);
+				InputData.DictionaryFillStrategy.HIGHEST_VALUE);
 		System.out.println(dictionary.toString());
 		characters = InputData.getGameChars(LETTERS_FILENAME);
 	}
@@ -122,6 +120,7 @@ public class Game {
 				for (int i = x; i < x+word.length(); i++) {
 					Boolean b = used.get(new Coordinate(i, y));
 					if (grid.get(i, y+1) != Grid.EMPTY_SPACE && (b == null || b == false)) {
+					// Armamos el string a eliminar
 						String s = ""+word.charAt(i-x);
 						int j = 0;
 						while (grid.get(i-x, y+j) != Grid.EMPTY_SPACE) {
@@ -129,6 +128,7 @@ public class Game {
 							j++;
 						}
 						if (!dictionary.contains(s)) {
+							// Lo sacamos
 							for (j = i; j >= x; j--) {
 								Boolean bb = used.get(new Coordinate(j, y));
 								if (bb != null && bb == true) continue;
@@ -138,6 +138,7 @@ public class Game {
 						}
 					}
 					if (grid.get(i, y-1) != Grid.EMPTY_SPACE && (b == null || b == false)) {
+					// Armamos el string a eliminar
 						String s = ""+word.charAt(i-x);
 						int j = 0;
 						while (grid.get(i-x, y-j) != Grid.EMPTY_SPACE) {
@@ -145,6 +146,7 @@ public class Game {
 							j++;
 						}
 						if (!dictionary.contains(s)) {
+						// Lo sacamos
 							for (j = i; j >= x; j--) {
 								Boolean bb = used.get(new Coordinate(j, y));
 								if (bb != null && bb == true) continue;
@@ -164,9 +166,9 @@ public class Game {
 					throw new IllegalArgumentException("vertical failed bottom found "+grid.get(x, word.length()+y));
 				}
 				for (int i = y; i < y+word.length(); i++) {
-					// Si esta usado salteo
-					Boolean b = used.get(new Coordinate(x, i));
-					if (grid.get(x+1, i) != Grid.EMPTY_SPACE && (b == null || b == false)) {
+					boolean isOccupied = isOccupied(x, i);
+					if (grid.get(x+1, i) != Grid.EMPTY_SPACE && !isOccupied) {
+					// Armamos el string a eliminar
 						String s = ""+word.charAt(i-y);
 						int j = 0;
 						while (grid.get(x+j,i-y) != Grid.EMPTY_SPACE) {
@@ -174,6 +176,7 @@ public class Game {
 							j++;
 						}
 						if (!dictionary.contains(s)) {
+						// Sacar del tablero lo que quedo
 							for (j = i-1; j >= y; j--) {
 								Boolean bb = used.get(new Coordinate(x, j));
 								System.out.println("bb:"+bb+" x:"+x+" y:"+j);
@@ -183,7 +186,8 @@ public class Game {
 							throw new IllegalArgumentException("vertical failed middle right");
 						}
 					}
-					if (grid.get(x-1, i) != Grid.EMPTY_SPACE && (b == null || b == false)) {
+					if (grid.get(x-1, i) != Grid.EMPTY_SPACE && !isOccupied) {
+						// Armamos el string a eliminar
 						String s = ""+word.charAt(i-y);
 						int j = 0;
 						while (grid.get(x-j,i-y) != Grid.EMPTY_SPACE) {
@@ -191,6 +195,7 @@ public class Game {
 							j++;
 						}
 						if (!dictionary.contains(s)) {
+							// Sacar del tablero lo que quedo
 							for (j = i-1; j >= y; j--) {
 								Boolean bb = used.get(new Coordinate(x, j));
 								System.out.println("bb:"+bb+" x:"+x+" y:"+j);
@@ -209,8 +214,8 @@ public class Game {
 		
 	}
 	
+	
 	private void removeWord(WordXY word) {
-		
 		
 		words.remove(word);
 		removeWordVisually(word);
@@ -248,16 +253,14 @@ public class Game {
 	private void removeWordVisually(WordXY word) {
 		
 		if (word.direction == Direction.HORIZONTAL) {
-			for (int i = 0; i < word.word.length(); i++) {
-				Boolean b = used.get(new Coordinate(word.pos.x+i, word.pos.y));
-				if (b == null || b == false) {
+			for (int i = word.pos.x; i < word.word.length()+word.pos.x; i++) {
+				if (!isOccupied(i, word.pos.y)) {
 					grid.set(word.pos.x+i, word.pos.y, ' ');
 				}
 			}
 		} else {
-			for (int i = 0; i < word.word.length(); i++) {
-				Boolean b = used.get(new Coordinate(word.pos.x, word.pos.y+i));
-				if (b == null || b == false) {
+			for (int i = word.pos.y; i < word.word.length()+word.pos.y; i++) {
+				if (!isOccupied(word.pos.x, i)) {
 					grid.set(word.pos.x, word.pos.y+i, ' ');
 				}
 			}
@@ -265,9 +268,18 @@ public class Game {
 		
 	}
 	
-	public void start() {
-		//(Martin v7)TODO: Llamaria a un metodo getNext o algo asi
-		/*TODO ACA SE EJECUTA MEJOR OPCION*/
+	private boolean isOccupied(int x, int y) {
+		Boolean b = used.get(new Coordinate(x,y));
+		return b != null && b == true;
+	}
+	
+	private void markOccupied(int x, int y) {
+		System.out.println("Mark Ocuppied ("+x+","+y+")");
+		used.put(new Coordinate(x, y), true);
+	}
+	
+	private void approximate() {
+		System.out.println("Aprox solution");
 		
 		String s = dictionary.bestFirstOption(characters, 7);
 		
@@ -276,6 +288,9 @@ public class Game {
 		int y = grid.size()/2;
 		addWord(x, y, Direction.HORIZONTAL, s);
 		grid.print();
+		// La i tiene la info del indice de la ultima palabra buscada
+		// para hacer el hill climb sacamos la palabra y seguimos
+		// probando a partir de i
 		int i = 0;
 		Direction j = Direction.HORIZONTAL;
 		
@@ -284,39 +299,45 @@ public class Game {
 		String aux  = null;
 		while (s != null) {
 			aux = null;
-			for (i = 0; i < s.length() && aux == null; i++) {
+			while (i < s.length() && aux == null) {
 				System.out.println("starting for with i: "+i + " s: "+s+" aux>: "+aux );
-				boolean cont=false;
+				boolean cont = false;
 				Character c = (Character)s.charAt(i);
 				if (j == Direction.VERTICAL) {
-					Boolean b = used.get(new Coordinate(x,y+i));
-					if (b != null && b == true)
+					if (isOccupied(x, y+1))
 						cont = true;
 				}
 				else {
-					Boolean b = used.get(new Coordinate(x+i,y));
-					if (b != null && b == true)
+					if (isOccupied(x+i, y))
 						cont = true;
 				}
 				if (!cont) {
 					System.out.println("looking for word with> "+c);
+					
+					System.out.println(characters.size());
+					System.out.println(characters);
+					characters.add(c);
 					aux = dictionary.bestLimitedOptionAfter(characters, MAX_LENGTH_WORD, c, null);
+					
+					System.out.println(characters.size());
+					System.out.println(characters);
 					
 					System.out.println("ack "+aux);
 					if (aux == null) {
-						if (i == s.length()-1) {
+						characters.remove(c);
+						i++;
+						if (i == s.length()) {
 							s = null;
 							break;
 						}
 						continue;
 					}
 					if (j == Direction.VERTICAL) {
-						used.put(new Coordinate(x, y+i), true);
-						System.out.println("Setting ("+(x)+","+(y+i)+")");
+						markOccupied(x, y+i);
 					} else {
-						used.put(new Coordinate(x+i, y), true);
-						System.out.println("Setting ("+(x+i)+","+(y)+")");
+						markOccupied(x+i, y);
 					}
+					
 					int p = aux.indexOf(s.charAt(i));
 					String back = s;
 					s = aux;
@@ -336,7 +357,7 @@ public class Game {
 						x = x-p;
 						y = y+i;
 						if (!cut)
-							i = 0;
+							i = -1;
 					} else {
 						boolean cut = false;
 						try {
@@ -353,17 +374,93 @@ public class Game {
 						y = y - p;
 						System.out.println(s + "("+x+","+y+")");
 						if (!cut)
-							i = 0;
+							i = -1;
 					}
-					grid.print();
+					if (i != -1)
+						grid.print();
 					System.out.println(s);
-					
 				}
+				i++;
 			}
 			
 		}
 		
+	//TODO: Hill Climb Now
+			
+		hillClimb(i);
 	}
+	
+	private void hillClimb(int lastIndex) {
+		
+		int score = grid.getScore();
+		
+		System.out.println("current score: " + score);
+		
+		switch (words.size()) {
+		case 0:
+			break;
+		case 1:
+				// Buscar la palabra que le sigue
+		default:
+			// Removemos 1, probamos las siguientes posibilidades
+			// Volvemos y seguimos
+			
+			
+			break;
+		}
+		
+		
+		System.out.println("hillclimbing with lastIndex: "+ lastIndex);
+		
+		words.remove(words.size()-1);
+		
+		WordXY lastWord = words.get(words.size()-1);
+		
+		
+		
+		if (lastWord != null) {
+			System.out.println(lastWord.word);
+			for (int i = 0; i < lastWord.word.length(); i++) {
+				
+				String aux = dictionary.bestLimitedOptionAfter(characters, MAX_LENGTH_WORD, (Character)lastWord.word.charAt(i), null);
+				
+				System.out.println(aux);
+				
+			}
+		} else {
+			// Habia una sola palabra en el tablero
+		}
+		
+		
+		
+	}
+	
+	private void exact() {
+		
+		String bestFirstOption = dictionary.bestFirstOption(characters, 7);
+		
+		int x = grid.size()/2-bestFirstOption.length()+1;
+		int y = grid.size()/2;
+		
+		addWord(x, y, Direction.HORIZONTAL, bestFirstOption);
+		
+		grid.print();
+		
+		for (int i = x; i <= grid.size()/2; i++) {
+			
+		}
+		
+	}
+	
+	public void start(boolean exact) {
+		if (exact) {
+			exact();
+		} else {
+			approximate();
+		}
+	}
+	
+	
 	
 	public static Game getInstance() {
 		if (self == null) {
