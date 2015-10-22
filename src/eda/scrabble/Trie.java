@@ -8,7 +8,7 @@ public class Trie {
 	
 	protected static final char END_CHAR = 0;
 	
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	
 	private static class Node {
 //		(Martin v7)
@@ -72,7 +72,7 @@ public class Trie {
 							System.out.println("First es "+ c);
 						owner.first = n;
 					}
-					/**/else {prev.next = n;} 
+					else {prev.next = n;} 
 					n.add(word, this);
 				} else {
 					if (next == null)
@@ -92,6 +92,7 @@ public class Trie {
 	
 	public Trie(Map<Character, Integer> hierarchy) {
 		Node.hierarchy = hierarchy;
+		hierarchy.put(END_CHAR, Integer.MIN_VALUE);
 	}
 
 	public void add(String word) {
@@ -135,6 +136,8 @@ public class Trie {
 	}
 	
 	private void toString(List<String> l, Node node, String acum){
+		if(node == null)
+			return;
 		if(node.value.equals(END_CHAR))
 			l.add(acum);
 		
@@ -214,6 +217,7 @@ public class Trie {
 		
 		String resultWord = null;
 		Node node = null;
+		if(trie == null) return null;
 		if(prevWord!=null)
 		{
 				Character c = prevWord.charAt(0);

@@ -1,6 +1,7 @@
 package eda.scrabble;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,8 +82,8 @@ public class Game {
 		
 	}
 	
-	private final static String DICTIONARY_FILENAME = "dic2.txt";
-	private final static String LETTERS_FILENAME = "l2.txt";
+	private final static String DICTIONARY_FILENAME = "dic4.txt";
+	private final static String LETTERS_FILENAME = "l4.txt";
 	private final static String CHAR_VALUE_FILENAME = "charValue.txt";
 	
 	private final static boolean DEBUG = false;
@@ -107,11 +108,14 @@ public class Game {
 	
 	private Game() {
 		grid = new Grid();
+		long l = System.nanoTime();
 		characters = InputData.getGameChars(LETTERS_FILENAME);
 		dictionary = InputData.fillDictionary(
 				DICTIONARY_FILENAME,
 				InputData.DictionaryFillStrategy.HIGHEST_VALUE,
 				characters);
+		long l2 = System.nanoTime() -l; 
+		System.out.println(l2/1000000.0);
 		System.out.println(dictionary.toString());
 	}
 	
