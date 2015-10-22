@@ -86,7 +86,7 @@ public class Game {
 	private final static String LETTERS_FILENAME = "l7.txt";
 	private final static String CHAR_VALUE_FILENAME = "charValue.txt";
 	
-	private final static boolean DEBUG = true;
+	private final static boolean DEBUG = false;
 	
 	public final static Map<Character,Integer> VALUE_MAP = InputData.fillValueMap(CHAR_VALUE_FILENAME);
 	
@@ -125,8 +125,16 @@ public class Game {
 			throw new IllegalArgumentException("Pos escapes negative");
 		if (x >= grid.size() || y >= grid.size())
 			throw new IllegalArgumentException("Init pos escapes positive");
-		if (x+word.length() >= grid.size() || y+word.length() >= grid.size())
-			throw new IllegalArgumentException("Final pos escapes positive");
+		if (d == Direction.HORIZONTAL) {
+			if (x+word.length() >= grid.size()) {
+				throw new IllegalArgumentException("Final pos escapes positive "+d);
+			}
+		} else {
+			if (y+word.length() >= grid.size()) {
+				throw new IllegalArgumentException("Final pos escapes positive " + d);
+			}
+		}
+		
 		if (DEBUG)
 			System.out.println("inserting "+word+" at x:"+x+" y:"+y+" "+d);
 		switch (d) {
@@ -529,7 +537,7 @@ public class Game {
 						addWord(gridElem.pos.x + i, gridElem.pos.y - intersectionIndex, Direction.VERTICAL, aux);
 					} else {
 						if (DEBUG)
-							System.out.println("Attempting to add " + aux + " at ("+(gridElem.pos.x+i)+","+(gridElem.pos.y-intersectionIndex)+")" + Direction.HORIZONTAL);
+							System.out.println("Attempting to add " + aux + " at ("+(gridElem.pos.x-intersectionIndex)+","+(gridElem.pos.y+i)+")" + Direction.HORIZONTAL);
 						addWord(gridElem.pos.x - intersectionIndex, gridElem.pos.y + i, Direction.HORIZONTAL, aux);
 					}
 				}  catch (IllegalArgumentException ex) {
