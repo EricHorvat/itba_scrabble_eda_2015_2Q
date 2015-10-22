@@ -15,6 +15,8 @@ import eda.scrabble.Trie;
 
 public class InputData{
 	
+	private final static boolean DEBUG = true;
+	
 	public enum DictionaryFillStrategy {
 		NONE,
 		HIGHEST_OCURRENCY,
@@ -70,7 +72,8 @@ public class InputData{
 		
 		for (char c : s.toCharArray()) {
 			if (!chars.contains((Character)c)) {
-				System.out.println(c +" is not in chars: " + chars);
+				if (DEBUG)
+					System.out.println(c +" is not in chars: " + chars);
 				return false;
 			}
 		}
@@ -85,6 +88,9 @@ public class InputData{
 		
 		
 		List<String> words = readAllLines(filename);
+		
+		if (DEBUG)
+			System.out.println("Got " + words.size() + " words");
 		
 		Dictionary dict;
 		
@@ -130,11 +136,17 @@ public class InputData{
 			dict = new Dictionary(popularMap);
 		}
 		
-		System.out.println(words);
+		if (DEBUG) {
+			System.out.println("Trimmed to " + words.size() + " words");
+			System.out.println(words);
+		}
 		
 		for (String word : words) {
 			dict.add(word.toUpperCase());
 		}
+		
+		if (DEBUG)
+			System.out.println(dict);
 		
 		//Trie.moveVertically(dict);
 		

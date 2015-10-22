@@ -37,25 +37,28 @@ public class Grid {
 	
 	public void print() {
 		System.out.print(" +");
-		for (int i = 0; i < GRID_SIZE; i++)
-			System.out.print(i%10);
+		for (int i = 0; i < GRID_SIZE; i++) {
+			int h = i %10; 
+			System.out.print(h+"|");
+		}
 		System.out.println('+');
 		System.out.print(" +");
-		for (int i = 0; i < GRID_SIZE; i++)
+		for (int i = 0; i < GRID_SIZE*2-1; i++)
 			System.out.print('-');
 		System.out.println('+');
 		for (int i = 0; i < GRID_SIZE; i++) {
 			int h = i%10;
 			System.out.print(String.valueOf(h)+'|');;
 			for (int j = 0; j < GRID_SIZE; j++) {
-				System.out.print(grid[i][j]);
+				System.out.print(grid[i][j]+"|");
 			}
-			System.out.println('|');
+			System.out.println();
+			System.out.print(" |");
+			for (int j = 0; j < GRID_SIZE*2-1; j++) {
+				System.out.print("-");
+			}
+			System.out.println("+");
 		}
-		System.out.print(" +");
-		for (int i = 0; i < GRID_SIZE; i++)
-			System.out.print('-');
-		System.out.println('+');
 	}
 	
 	public int size() {

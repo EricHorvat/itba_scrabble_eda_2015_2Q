@@ -8,7 +8,7 @@ public class Trie {
 	
 	protected static final char END_CHAR = 0;
 	
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	
 	private static class Node {
 //		(Martin v7)
