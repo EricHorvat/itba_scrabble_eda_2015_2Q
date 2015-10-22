@@ -128,6 +128,12 @@ public class Trie {
 		return l.toString();
 	}
 	
+	public List<String> getWords() {
+		List<String> l = new ArrayList<String>();
+		toString(l, first, "");
+		return l;
+	}
+	
 	private void toString(List<String> l, Node node, String acum){
 		if(node.value.equals(END_CHAR))
 			l.add(acum);

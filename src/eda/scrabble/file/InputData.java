@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +66,18 @@ public class InputData{
 		return hMap;
 	}
 
-	public static Dictionary fillDictionary(String filename, DictionaryFillStrategy strategy) {
+	private static boolean containsAll(String s, List<Character> chars) {
+		
+		for (char c : s.toCharArray()) {
+			if (!chars.contains((Character)c)) {
+				System.out.println(c +" is not in chars: " + chars);
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public static Dictionary fillDictionary(String filename, DictionaryFillStrategy strategy, List<Character> characters) {
 		Map<Character, Integer> popularMap = new HashMap<Character, Integer>();
 		
 		for (char c = 'A';c <= 'Z';c++)
@@ -76,40 +88,49 @@ public class InputData{
 		
 		Dictionary dict;
 		
+		Iterator<String> it = words.iterator();
+		
 		if (strategy == DictionaryFillStrategy.HIGHEST_VALUE || strategy == DictionaryFillStrategy.LOWEST_VALUE) {
 			
 			dict = new Dictionary(Game.VALUE_MAP);
 			
+			while (it.hasNext()) {
+				String word = it.next().toUpperCase();
+				if (!(2 <= word.length() && word.length() <= 7 && containsAll(word, characters))) {
+					it.remove();
+				}
+			}
+			
 		} else {
-		
-			for (String word : words) {
-				//TODO: falta la validacion de si me alcanzan las letras
-				if (2 <= word.length() && word.length() <= 7) {
-					word = word.toUpperCase();
+			
+			while (it.hasNext()) {
+				String word = it.next().toUpperCase();
+				if (2 <= word.length() && word.length() <= 7 && containsAll(word, characters)) {
 					for (char c : word.toCharArray()) {
 						switch (strategy) {
-						case NONE:
-							// Todos son iguales
-							popularMap.put(c, 0);
-							break;
-						case LOWEST_OCURRENCY:
-							popularMap.put(c, popularMap.get(c) + 1);
-							break;
-						case HIGHEST_OCURRENCY:
-							popularMap.put(c, popularMap.get(c) - 1);
-							break;
-						default:
-							break;
+							case NONE:
+								popularMap.put(c, 0);
+								break;
+							case LOWEST_OCURRENCY:
+								popularMap.put(c, popularMap.get(c) + 1);
+								break;
+							case HIGHEST_OCURRENCY:
+								popularMap.put(c, popularMap.get(c) - 1);
+								break;
+							default:
+								break;
 						}
 					}
 				} else {
-					words.remove(word);
+					it.remove();
 				}
 				
 			}
 			
 			dict = new Dictionary(popularMap);
 		}
+		
+		System.out.println(words);
 		
 		for (String word : words) {
 			dict.add(word.toUpperCase());
