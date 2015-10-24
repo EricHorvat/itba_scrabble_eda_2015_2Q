@@ -98,7 +98,7 @@ public class InputData{
 		
 		if (strategy == DictionaryFillStrategy.HIGHEST_VALUE || strategy == DictionaryFillStrategy.LOWEST_VALUE) {
 			
-			dict = new Dictionary(Game.VALUE_MAP);
+			dict = new Dictionary(strategy, Game.VALUE_MAP);
 			
 			while (it.hasNext()) {
 				String word = it.next().toUpperCase();
@@ -137,7 +137,7 @@ public class InputData{
 				
 			}
 			
-			dict = new Dictionary(popularMap);
+			dict = new Dictionary(strategy, popularMap);
 		}
 		
 		if (DEBUG) {

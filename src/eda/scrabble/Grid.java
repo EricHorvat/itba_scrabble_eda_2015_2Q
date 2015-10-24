@@ -29,6 +29,14 @@ public class Grid {
 		}
 	}
 	
+	public Grid(Grid grid) {
+		for (int i = 0; i < GRID_SIZE; i++) {
+			for (int j = 0; j < GRID_SIZE; j++) {
+				this.grid[i][j] = grid.get(i, j);
+			}
+		}
+	}
+	
 	public int getScore() {
 		int sum = 0;
 		for (int i = 0; i < GRID_SIZE; i++) {
@@ -65,9 +73,9 @@ public class Grid {
 			System.out.print(String.valueOf(h)+'|');;
 			for (int j = 0; j < GRID_SIZE; j++) {
 				if (DEBUG)
-					if (COLORIZE && Game.getInstance().isOccupied(j, i))
-						System.out.print(ANSI_WHITE + grid[i][j]+ ANSI_RESET +  "|");
-					else
+//					if (COLORIZE && Game.getInstance().isOccupied(j, i))
+//						System.out.print(ANSI_WHITE + grid[i][j]+ ANSI_RESET +  "|");
+//					else
 						System.out.print(grid[i][j]+"|");
 				else
 					System.out.print(grid[i][j]+"|");
@@ -91,9 +99,9 @@ public class Grid {
 		for (int i = 0; i < GRID_SIZE; i++) {
 			for (int j = 0; j < GRID_SIZE; j++) {
 				if (DEBUG)
-					if (COLORIZE && Game.getInstance().isOccupied(j, i))
-						System.out.print(ANSI_WHITE + grid[i][j]+ ANSI_RESET);
-					else
+//					if (COLORIZE && Game.getInstance().isOccupied(j, i))
+//						System.out.print(ANSI_WHITE + grid[i][j]+ ANSI_RESET);
+//					else
 						System.out.print(grid[i][j]);
 				else
 					System.out.print(grid[i][j]);

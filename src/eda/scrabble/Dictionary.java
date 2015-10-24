@@ -3,17 +3,22 @@ package eda.scrabble;
 import java.util.List;
 import java.util.Map;
 
+import eda.scrabble.file.InputData.DictionaryFillStrategy;
+
 public class Dictionary extends Trie {
 
 	private static final int MIN_LENGTH_ALLOWED = 2;
 	private static final int MAX_LENGTH_ALLOWED = 7;
 	
-	public Dictionary() {
-		
+	private DictionaryFillStrategy kind;
+	
+	public DictionaryFillStrategy getDictionaryFillStrategy() {
+		return this.kind;
 	}
 	
-	public Dictionary(Map<Character, Integer> map) {
+	public Dictionary(DictionaryFillStrategy kind, Map<Character, Integer> map) {
 		super(map);
+		this.kind = kind;
 	}
 	
 	public void add(String word) {
@@ -22,19 +27,6 @@ public class Dictionary extends Trie {
 				super.add(word);
 	}
 
-	/**
-	 * @deprecated Lo movi a Input Data para que lo pasen como estrategia
-	 *             asi no nos joden por POO. Habria que hacer una clase
-	 *             InvertedDictionary :S 
-	 * @see @{InputData.DictionaryStategy}
-	 */
-	/*(Eric v8) Si quiero la prioridad que me pasan al reves, sea, el mayor al final*/
-	public static Dictionary invertedDictionary(Map<Character, Integer> hierarchy){
-		for(Character c : hierarchy.keySet()){
-			hierarchy.put(c, -hierarchy.get(c));
-		}
-		return new Dictionary(hierarchy);
-	}
 
 	/**
 	 * Busca la mejor palabra del diccionario

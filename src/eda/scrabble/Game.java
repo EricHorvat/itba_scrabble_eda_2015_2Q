@@ -2,18 +2,16 @@ package eda.scrabble;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Queue;
+
 
 import eda.scrabble.file.InputData;
 
-public class Game {
+public abstract class Game {
 	
-	private static class Coordinate{
+	protected static class Coordinate{
 		public int x;
 		public int y;
 
@@ -54,7 +52,28 @@ public class Game {
 		
 	}
 	
-	private static class WordXY {
+	protected static class LetterXY {
+		
+		WordXY word;
+		Character c;
+		
+		public LetterXY(WordXY word, Character c) {
+			this.word = word;
+			this.c = c;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == this) return true;
+			if (!(obj instanceof LetterXY)) return false;
+			LetterXY other = (LetterXY) obj;
+			if (!this.word.equals(other.word)) return false;
+			if (this.c != other.c) return false;
+			return true;
+		}
+	}
+	
+	protected static class WordXY {
 		
 		public String word;
 		public Coordinate pos;
@@ -97,33 +116,33 @@ public class Game {
 		
 	}
 	
-	private final static String DICTIONARY_FILENAME = "dic12.txt";
-	private final static String LETTERS_FILENAME = "l8.txt";
-	private final static String CHAR_VALUE_FILENAME = "charValue.txt";
+	protected final static String DICTIONARY_FILENAME = "dic7.txt";
+	protected final static String LETTERS_FILENAME = "l7.txt";
+	protected final static String CHAR_VALUE_FILENAME = "charValue.txt";
 	
-	private final static boolean DEBUG = false;
+	protected final static int MAX_LENGTH_WORD = 7;
+	
+	protected final static boolean DEBUG = false;
 	
 	public final static Map<Character,Integer> VALUE_MAP = InputData.fillValueMap(CHAR_VALUE_FILENAME);
 	
-	private final static int MAX_LENGTH_WORD = 7;
+	protected Grid grid;
 	
-	private Grid grid;
-	private static Game self = null;
-	
-	private Dictionary dictionary;
-	private Map<Character, Integer> characters;
+	protected Map<Character, Integer> characters;
 	private Map<Coordinate,Boolean> used = new HashMap<Coordinate,Boolean>();
 	
-	private List<WordXY> words = new ArrayList<WordXY>();
+	protected Dictionary dictionary;
 	
-	private int maxScore = 0;
+	protected List<WordXY> words = new ArrayList<WordXY>();
+	
+	protected int maxScore = 0;
 	
 	public enum Direction {
 		HORIZONTAL,
 		VERTICAL
 	};
 	
-	private Game() {
+	public Game() {
 		grid = new Grid();
 		long start = System.nanoTime();
 		characters = InputData.getGameChars(LETTERS_FILENAME);
@@ -160,7 +179,7 @@ public class Game {
 	}
 	
 	//(Martin v7) TODO: El dictionary tendria que hacer una integracion con esto
-	private WordXY addWord(int x, int y, Direction d, String word) throws IllegalArgumentException {
+	protected WordXY addWord(int x, int y, Direction d, String word) throws IllegalArgumentException {
 		
 		if (x < 0 || y < 0)
 			throw new IllegalArgumentException("Pos escapes negative");
@@ -307,40 +326,10 @@ public class Game {
 		
 	}
 	
-	
-	private void removeWord(WordXY word) {
+	protected void removeWord(WordXY word) {
 		
 		words.remove(word);
 		removeWordVisually(word);
-	}
-	
-	private void removeWordAt(int x, int y) {
-		
-		int count = 0;
-		
-		WordXY remove = null;
-		
-		for (WordXY word : words) {
-			
-			if (word.has(x, y)) {
-				count++;
-				remove = word;
-			}
-			
-		}
-		if (count >= 2) {
-			throw new IllegalStateException();
-		}
-		
-		if (count == 1) {
-			removeWordVisually(remove);
-			words.remove(remove);
-		}
-		
-	}
-	
-	private void removeWordAt(Coordinate coord) {
-		removeWordAt(coord.x, coord.y);
 	}
 	
 	private void removeWordVisually(WordXY word) {
@@ -370,187 +359,33 @@ public class Game {
 		return b != null && b == true;
 	}
 	
-	private void markOccupied(int x, int y) {
+	protected void markOccupied(int x, int y) {
 		if (DEBUG)
 			System.out.println("Mark Ocuppied ("+x+","+y+")");
 		used.put(new Coordinate(x, y), true);
 	}
 	
-	private void markAvailable(int x, int y) {
+	protected void markAvailable(int x, int y) {
 		if (DEBUG)
 			System.out.println("Mark Available ("+x+","+y+")");
 		used.put(new Coordinate(x, y), false);
 	}
 	
-	private void approximate() {
-		System.out.println("Aprox solution");
-		
-		String s = dictionary.bestFirstOption(characters, 7);
-		
-		System.out.println(s);
-		int x = (grid.size()-s.length())/2;
-		int y = grid.size()/2;
-		addWord(x, y, Direction.HORIZONTAL, s);
-		grid.print();
-		// La i tiene la info del indice de la ultima palabra buscada
-		// para hacer el hill climb sacamos la palabra y seguimos
-		// probando a partir de i
-		int i = 0;
-		Direction j = Direction.HORIZONTAL;
-		
-		System.out.println(s + "("+x+","+y+")");
-		
-		String aux  = null;
-		while (s != null) {
-			aux = null;
-			while (i < s.length() && aux == null) {
-				System.out.println("starting for with i: "+i + " s: "+s+" aux>: "+aux );
-				boolean cont = false;
-				Character c = (Character)s.charAt(i);
-				if (j == Direction.VERTICAL) {
-					if (isOccupied(x, y+1))
-						cont = true;
-				}
-				else {
-					if (isOccupied(x+i, y))
-						cont = true;
-				}
-				if (!cont) {
-					System.out.println("looking for word with> "+c);
-					
-					System.out.println(characters.size());
-					System.out.println(characters);
-					characters.put(c, characters.get(c)+1);
-					aux = dictionary.bestLimitedOptionAfter(characters, MAX_LENGTH_WORD, c, null);
-					
-					System.out.println(characters.size());
-					System.out.println(characters);
-					
-					System.out.println("ack "+aux);
-					if (aux == null) {
-						characters.put(c, characters.get(c)-1);
-						i++;
-						if (i == s.length()) {
-							s = null;
-							break;
-						}
-						continue;
-					}
-					if (j == Direction.VERTICAL) {
-						markOccupied(x, y+i);
-					} else {
-						markOccupied(x+i, y);
-					}
-					
-					int p = aux.indexOf(s.charAt(i));
-					String back = s;
-					s = aux;
-					System.out.println("j is "+ j);
-					if (j == Direction.VERTICAL) {
-						boolean cut = false;
-						try {
-							addWord(x-p, y+i, Direction.HORIZONTAL, s);
-						} catch (IllegalArgumentException ex) {
-							System.out.println(ex.getStackTrace().toString());
-							System.out.println(ex.getMessage());
-							s = back;
-							cut = true;
-						}
-						
-						j = Direction.HORIZONTAL;
-						x = x-p;
-						y = y+i;
-						if (!cut)
-							i = -1;
-					} else {
-						boolean cut = false;
-						try {
-							addWord(x+i, y-p, Direction.VERTICAL, s);
-						} catch (IllegalArgumentException ex) {
-							System.out.println(ex.getStackTrace().toString());
-							System.out.println(ex.getMessage());
-							s = back;
-							cut = true;
-						}
-						
-						x = x+i;
-						j = Direction.VERTICAL;
-						y = y - p;
-						System.out.println(s + "("+x+","+y+")");
-						if (!cut)
-							i = -1;
-					}
-					if (i != -1)
-						grid.print();
-					System.out.println(s);
-				}
-				i++;
-			}
-			
-		}
-		
-	//TODO: Hill Climb Now
-			
-		hillClimb(i);
-	}
-	
-	private void hillClimb(int lastIndex) {
-		
-		int score = grid.getScore();
-		
-		if (DEBUG)
-			System.out.println("current score: " + score);
-		
-		switch (words.size()) {
-		case 0:
-			break;
-		case 1:
-				// Buscar la palabra que le sigue
-		default:
-			// Removemos 1, probamos las siguientes posibilidades
-			// Volvemos y seguimos
-			
-			
-			break;
-		}
-		
-		
-		if (DEBUG)
-			System.out.println("hillclimbing with lastIndex: "+ lastIndex);
-		
-		words.remove(words.size()-1);
-		
-		WordXY lastWord = words.get(words.size()-1);
-		
-		
-		
-		if (lastWord != null) {
-			if (DEBUG)
-				System.out.println(lastWord.word);
-			for (int i = 0; i < lastWord.word.length(); i++) {
-				
-				String aux = dictionary.bestLimitedOptionAfter(characters, MAX_LENGTH_WORD, (Character)lastWord.word.charAt(i), null);
-				
-				if (DEBUG)
-					System.out.println(aux);
-				
-			}
-		} else {
-			// Habia una sola palabra en el tablero
-		}
-		
-		
-		
-	}
-	
-	private void addCharacter(Character c) {
+	protected void addCharacter(Character c) {
 		characters.put(c, characters.get(c)+1);
 	}
 	
-	private void removeCharacter(Character c) {
+	protected void removeCharacter(Character c) {
 		characters.put(c, characters.get(c)-1);
 	}
 	
+	/**
+	 * 
+	 * @param gridElem
+	 * @param skip
+	 * @param accumAdded
+	 * @deprecated
+	 */
 	private void placeWordInWidth(WordXY gridElem, int skip, int accumAdded) {
 		
 		if (gridElem == null) return;
@@ -570,7 +405,7 @@ public class Game {
 				System.out.println("SEARCH/"+intersectionChar+"_"+gridElem.word+" (" +l.size()+") " +getAvailableChars());
 			}
 			
-			aux = dictionary.bestFirstLimitedOption(characters, MAX_LENGTH_WORD, (Character)intersectionChar);
+//			aux = dictionary.bestFirstLimitedOption(characters, MAX_LENGTH_WORD, (Character)intersectionChar);
 			
 			if (DEBUG) System.out.println("ACK aux="+aux);
 			
@@ -705,7 +540,7 @@ public class Game {
 					System.out.println("Replacing "+ gridElem.word.charAt(i) + " for use in intersection");
 				characters.put((Character)intersectionChar, characters.get(intersectionChar)+1);
 				
-				aux = dictionary.bestLimitedOptionAfter(characters, MAX_LENGTH_WORD, gridElem.word.charAt(i), aux);
+//				aux = dictionary.bestLimitedOptionAfter(characters, MAX_LENGTH_WORD, gridElem.word.charAt(i), aux);
 				
 				if (DEBUG)
 					System.out.println("Found word: " + aux);
@@ -795,7 +630,7 @@ public class Game {
 		
 	}
 	
-	private static void printUsed(List<LetterXY> used) {
+	protected static void printUsed(List<LetterXY> used) {
 		System.out.print("used: ");
 		for (LetterXY l : used)
 			System.out.print(l.c);
@@ -803,304 +638,16 @@ public class Game {
 	}
 	
 	
-	private void possibleSolution1(List<LetterXY> used) {
-		
-		String aux = null;
-		WordXY toAdd = null;
-		
-		LetterXY letter = null;
-		
-		if (DEBUG) printUsed(used);
-		
-		// Backup used letters for restauration later
-		List<LetterXY> backup = new ArrayList<>(grid.size()*grid.size());
-		for (LetterXY l : used)
-			backup.add(l);
-		
-		// Loop through @{used}. It contains the letters that will be analyzed
-		// Basically Letters\IntersectedLetters
-		for (int i = 0; i < used.size(); i++) {
-		
-			letter = used.get(i);
-			
-			// Lookup all words available for inserting with letter=used.get(i)
-			while (true) {
-				
-				// Show available chars
-				if (DEBUG) {
-					List<Character> l = getAvailableChars();
-					System.out.println("("+l.size()+"): "+l);
-				}
-				
-				// Character in the intersection should be added to available chars
-				// since it isnt available but next word will contain this letter
-				addCharacter(letter.c);
-				
-				if (DEBUG) System.out.println("Adding " + letter.c + " for search");
-				
-				// SELECT word FROM dictionary WHERE
-				//     word.toCharArray().isContainedIn(@{characters})
-				// AND length <= @{MAX_LENGTH_WORD}
-				// AND word.indexOf(@{letter.c}) != -1
-				// AND word > aux -- Viene despues en el Trie
-				//
-				// Busca la proxima palabra despues de aux que me alcancen los caracteres y tenga el caracter
-				// letter.c
-				//
-				// Si encuentra la palabra, me remueve sus caracters de characters
-				aux = dictionary.bestLimitedOptionAfter(characters, MAX_LENGTH_WORD, letter.c, aux);
-				
-				if (DEBUG) System.out.println("/SEARCH/"+letter.word.word+"/"+ letter.c + "/"+aux);
-				if (DEBUG) System.out.println("Removing " + letter.c + ". Already searched");
-				
-				// Since we added letter.c we should remove it
-				removeCharacter(letter.c);
-				
-				// Si aux == null ==> con este caracter no hay mas palabras para buscar
-				if (aux == null) {
-					
-					// No hay mas palabras con esta letra (letter.c)
-					// ==> pasamos a la proxima
-					break;
-				}
-				
-				
-				// Hacemos la matematica para que en la grilla se coloque todo prolijo
-				// y en su lugar
-				int intersectionIndex = aux.indexOf(letter.c);
-				int letterIndex = letter.word.word.indexOf(letter.c);
-				
-				// Marcamos a la interseccion como lugar ocupado
-				if (letter.word.direction == Direction.HORIZONTAL) {
-					markOccupied(letter.word.pos.x+letterIndex, letter.word.pos.y);
-				} else {
-					markOccupied(letter.word.pos.x, letter.word.pos.y+letterIndex);
-				}
-				
-				// Attempt to add word
-				try {
-					if (letter.word.direction == Direction.HORIZONTAL) {
-						toAdd = addWord(letter.word.pos.x+letterIndex, letter.word.pos.y-intersectionIndex, Direction.VERTICAL, aux);
-					} else {
-						toAdd = addWord(letter.word.pos.x-intersectionIndex, letter.word.pos.y+letterIndex, Direction.HORIZONTAL, aux);
-					}
-					
-				} catch (IllegalArgumentException ex) {
-					// Reseteamos porque la palabra no se pudo agregar
-					if (DEBUG) System.out.println(aux + " was not added. " + ex.getMessage());
-					
-					// Marcamos el lugar que habiamos marcado como ocupado
-					// como libre porque no agregamos la palabra
-					if (letter.word.direction == Direction.HORIZONTAL) {
-						markAvailable(letter.word.pos.x+letterIndex, letter.word.pos.y);
-					} else {
-						markAvailable(letter.word.pos.x, letter.word.pos.y+letterIndex);
-					}
-					
-					// Devolvemos los caracteres que no se agregaron al conjunto de caracteres
-					// disponibles
-					// OjO, menos el de la interseccion porque lo usa la palabra anterior
-					for (int j = 0; j < aux.length(); j++) {
-						Character c = (Character)aux.charAt(j);
-						if (j != intersectionIndex) {
-							addCharacter(c);
-						}
-					}
-					
-					// Seguimos y probamos si la proxima palabra calza en este lugar
-					continue;
-				}
-				
-				
-				
-				// Sacamos a @{letter} de @{used} para que cuando entre en la recursiva
-				// No se ponga a buscar palabras para calzar en la interseccion
-				used.remove(letter);
-				
-				
-				// Nos fijamos si este es mejor tablero que el anterior mejor
-				// De ser asi actualizamos
-				int score = grid.getScore();
-				if (score > maxScore)
-					maxScore = score;
-				
-				//TODO: Aca cuando implementemos Ant y toda la bola habria que preguntar
-				//     por la opcion --display 
-				// Mostramos el tablero
-				grid.printSimple();
-				
-				
-				// Agregamos los caracteres que en la recursiva se van a usar para buscar
-				// mas palabras
-				for (int j = 0; j < aux.length(); j++) {
-					Character c = (Character)aux.charAt(j);
-					if (j != intersectionIndex) {
-						used.add(new LetterXY(toAdd, c));
-					}
-				}
-				
-				// Perform recursive call to same method
-				possibleSolution1(used);
-				
-				/*
-				 * #################
-				 * --- Cleanup Stage
-				 * #################
-				 */
-				
-				
-				// Borramos la palabra que acabamos de agregar al tablero
-				removeWord(toAdd);
-				
-				// Marcamos la interseccion como disponible porque ya que sacamos la palabra
-				// no hay mas interseccion
-				if (letter.word.direction == Direction.HORIZONTAL) {
-					markAvailable(letter.word.pos.x+letterIndex, letter.word.pos.y);
-				} else {
-					markAvailable(letter.word.pos.x, letter.word.pos.y+letterIndex);
-				}
-				
-				
-				// Restauramos la informacion para que el proximo ciclo haga su trabajo
-				used.clear();
-				for (LetterXY l: backup)
-					used.add(l);
-				
-				
-				// Reponemos los caracteres que acabamos de consumir
-				for (int j = 0; j < aux.length(); j++) {
-					if (j != intersectionIndex)
-						addCharacter((Character)aux.charAt(j));
-				}
-				
-			}
-			
-			// No deberia suceder, pero chequeamos igual por si las moscas
-			if (letter.c != used.get(i).c) {
-				System.err.println("######################\n---------------Mismatch\n#################");
-				throw new IllegalAccessError(letter.c + " should be equal to " + used.get(i).c);
-			}
-			
-		}
-		
-	}
+	public abstract void solve();
 	
-	private static class LetterXY {
+	public void start() {
 		
-		WordXY word;
-		Character c;
+		solve();
 		
-		public LetterXY(WordXY word, Character c) {
-			this.word = word;
-			this.c = c;
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if (obj == this) return true;
-			if (!(obj instanceof LetterXY)) return false;
-			LetterXY other = (LetterXY) obj;
-			if (!this.word.equals(other.word)) return false;
-			if (this.c != other.c) return false;
-			return true;
-		}
-	}
-	
-	/**
-	 * Places each of the words in all posible starting positions
-	 * And calls the solver methods.
-	 */
-	private void exact() {
-		
-//		String bestFirstOption = dictionary.bestFirstOption(characters, 7);
-		
-		maxScore = 0;
-		
-		List<String> allWords = dictionary.getWords();
-		
-		// Reservo a lo sumo grid.size()^2 de letras
-//		Queue<LetterXY> l = new LinkedList<LetterXY>();
-		List<LetterXY> l = new ArrayList<>(grid.size()*grid.size());
-		
-		WordXY tmp = null;
-		
-		for (String w : allWords) {
-			if (DEBUG) {
-				System.out.println("########################################");
-				System.out.println("------------ Starting from scratch");
-				System.out.println("########################################");
-			}
-			if (DEBUG) {
-				List<Character> li = getAvailableChars();
-				System.out.println("Available chars("+li.size()+"): " + li);
-			}
-			
-			int x = grid.size()/2-w.length()+1;
-			int y = grid.size()/2;
-			
-			
-			// No problem board should be empty
-			tmp = addWord(x, y, Direction.HORIZONTAL, w);
-			
-			// Mark characters as used
-			for (char c : w.toCharArray()) {
-				removeCharacter(c);
-			}
-			
-			if (DEBUG)
-				System.out.println("Printing initial board");
-			grid.print();
-			
-			for (int i = x+1; i <= grid.size()/2; i++) {
-				for (char c : w.toCharArray()) {
-					l.add(new LetterXY(tmp, (Character)c));
-				}
-//				placeWordInDepth(words.get(words.size()-1), 0);
-//				placeWordInWidth(words.get(words.size()-1), 0, 0);
-				possibleSolution1(l);
-				while (words.size() > 0)
-					removeWord(words.get(words.size()-1));
-				if (DEBUG) {
-					grid.print();
-				}
-				
-				tmp = addWord(i, y, Direction.HORIZONTAL, w);
-				l.clear();
-			}
-			
-			for (char c : w.toCharArray()) {
-				addCharacter((Character)c);
-			}
-			
-			
-			
-			removeWord(words.get(words.size()-1));
-		}
-		
-		System.out.println("Max Score is: " + maxScore);
-		
-	}
-	
-	public void exact2() {
-		
-	}
-	
-	public void start(boolean exact) {
-		
-		if (exact) {
-			exact();
-		} else {
-			approximate();
-		}
 	}
 	
 	
 	
-	public static Game getInstance() {
-		if (self == null) {
-			self = new Game();
-		}
-		return self;
-	}
+	
 
 }
