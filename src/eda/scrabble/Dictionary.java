@@ -1,6 +1,5 @@
 package eda.scrabble;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +43,7 @@ public class Dictionary extends Trie {
 	 * @return la palabra encontrada
 	 */
 	public String bestFirstOption(
-			List<Character> availableChars,
+			Map<Character, Integer> availableChars,
 			int maxLength
 			)
 	{
@@ -60,7 +59,7 @@ public class Dictionary extends Trie {
 	 * @return
 	 */
 	public String bestFirstLimitedOption(
-			List<Character> availableChars,
+			Map<Character, Integer> availableChars,
 			int maxLength,
 			Character searchedChar
 			)
@@ -78,7 +77,7 @@ public class Dictionary extends Trie {
 	 * @return
 	 */
 	public String bestLimitedOptionAfter(
-			List<Character> availableChars,
+			Map<Character, Integer> availableChars,
 			int maxLength, /*(Eric v8) Serviria para no buscar de mas, se pueden poner 7 fichas*/
 			Character searchedChar,
 			String prevWord
@@ -92,17 +91,17 @@ public class Dictionary extends Trie {
 				best = bestOption(availableChars, 0, maxLength, searchedChar, i, best, this);
 			}
 		}
-		while(availableChars.contains((Character)END_CHAR))
+		while(availableChars.get(END_CHAR) > 0)
 		{
-			availableChars.remove((Character)END_CHAR);
+			availableChars.put(END_CHAR, availableChars.get((Character)END_CHAR)-1);
 		}
 		if(best!= null)
 		{
 			for (int i = 0; i < best.length(); i++) {
-			availableChars.remove(availableChars.size()-1);
+				availableChars.put((Character)best.charAt(i), availableChars.get((Character)best.charAt(i)) -1);
 			}
 			if(searchedChar!=null)
-				availableChars.add(searchedChar);
+				availableChars.put(searchedChar, availableChars.get(searchedChar)+1);
 		}
 		return best;
 	}

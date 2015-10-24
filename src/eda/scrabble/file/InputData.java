@@ -11,7 +11,6 @@ import java.util.Map;
 
 import eda.scrabble.Dictionary;
 import eda.scrabble.Game;
-import eda.scrabble.Trie;
 
 public class InputData{
 	
@@ -65,22 +64,23 @@ public class InputData{
 			hMap.put(c, value);
 		}
 		
+		
 		return hMap;
 	}
 
-	private static boolean containsAll(String s, List<Character> chars) {
+	private static boolean containsAll(String s, Map<Character, Integer> chars) {
 		
 		for (char c : s.toCharArray()) {
-			if (!chars.contains((Character)c)) {
+			if (chars.get((Character)c) <= 0) {
 				if (DEBUG)
-					System.out.println(c +" is not in chars: " + chars);
+					System.out.println(c +" is not in chars: " + Game.getAvailableChars(chars));
 				return false;
 			}
 		}
 		return true;
 	}
 	
-	public static Dictionary fillDictionary(String filename, DictionaryFillStrategy strategy, List<Character> characters) {
+	public static Dictionary fillDictionary(String filename, DictionaryFillStrategy strategy, Map<Character, Integer> characters) {
 		Map<Character, Integer> popularMap = new HashMap<Character, Integer>();
 		
 		for (char c = 'A';c <= 'Z';c++)
@@ -104,6 +104,8 @@ public class InputData{
 				String word = it.next().toUpperCase();
 				if (!(2 <= word.length() && word.length() <= 7 && containsAll(word, characters))) {
 					it.remove();
+					if (DEBUG)
+						System.out.println("Removing " + word + " from collection");
 				}
 			}
 			
@@ -111,7 +113,7 @@ public class InputData{
 			
 			while (it.hasNext()) {
 				String word = it.next().toUpperCase();
-				if (2 <= word.length() && word.length() <= 7 && containsAll(word, characters)) {
+				if ( 2 <= word.length() && word.length() <= 7 && containsAll(word, characters)) {
 					for (char c : word.toCharArray()) {
 						switch (strategy) {
 							case NONE:
@@ -128,6 +130,8 @@ public class InputData{
 						}
 					}
 				} else {
+					if (DEBUG)
+						System.out.println("Removing " + word + " from collection");
 					it.remove();
 				}
 				
@@ -153,16 +157,22 @@ public class InputData{
 		return dict;
 	}
 
-	public static List<Character> getGameChars(String filename){
+	public static Map<Character, Integer> getGameChars(String filename){
 
-		List<Character> list = new ArrayList<Character>();
+		Map<Character, Integer> map = new HashMap<>();
 		List<String> lines = readAllLines(filename);
 		
+		for (int i = 'A'; i <= 'Z'; i++)
+			map.put((Character)(char)i, 0);
+		// END_CHAR
+		map.put((Character)(char)0, 0);
+		
 		for (String line : lines) {
+			line = line.toUpperCase();
 			for (char c : line.toCharArray()) {
-				list.add(c);
+				map.put(c, map.get(c)+1);
 			}
 		}
-		return list;
+		return map;
 	}
 }

@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class Trie {
 	
-	protected static final char END_CHAR = 0;
+	protected static final Character END_CHAR = (Character)(char)0;
 	
 	private static final boolean DEBUG = false;
 	
@@ -205,7 +205,7 @@ public class Trie {
 	 * @return
 	 */
 	String bestOption(
-			List<Character> manipulableChars,
+			Map<Character, Integer> manipulableChars,
 			int currentIndex,/*(Eric v8) Esto sirve para decir cuando va(n) la(s) ficha(s) fija(s), solo falta ver si las pasamos por listas o arrays, etc*/
 			int maxLength, /*(Eric v8) Serviria para no buscar de mas, se pueden poner 7 fichas*/
 			Character searchedChar,
@@ -217,34 +217,40 @@ public class Trie {
 		
 		String resultWord = null;
 		Node node = null;
-		if(trie == null) return null;
-		if(prevWord!=null)
-		{
-				Character c = prevWord.charAt(0);
-				//TODO OJO, NO CONTROLO QUE LA PALABRA INGREADA NO ESTE EN EL TRIE (agregar un if != null) 
-				node = trie.containingCharacter(c);
-				if(prevWord.length()==1)
-				{
-					node = trie.bestNode(manipulableChars,node.next);
-					prevWord =null;
-				}else{
-					resultWord = bestOption(manipulableChars, currentIndex+1, maxLength, searchedChar, searchedPosition, prevWord.substring(1, prevWord.length()),node.nextLetter);
-					if (resultWord != null) {
-						resultWord = c.toString().concat(resultWord);
-						if(searchedChar!= null && searchedPosition == currentIndex && !(resultWord.charAt(currentIndex)==searchedChar)){
-							resultWord = null;
-							node = trie.bestNode(manipulableChars,node.next);
-						}
-							
+		if (trie == null) return null;
+		if (prevWord != null) {
+			Character c = prevWord.charAt(0);
+			//TODO OJO, NO CONTROLO QUE LA PALABRA INGREADA NO ESTE EN EL TRIE (agregar un if != null)
+			// Busco horizontalmente el nodo que tenga la primera letra de prevWord
+			node = trie.containingCharacter(c);
+			if (prevWord.length() == 1) {
+				// Si es la ultima letra
+				node = trie.bestNode(manipulableChars, node.next);
+				prevWord = null;
+			} else {
+				// Busca en mis descendientes el que se corresponda con prevWord
+				resultWord = bestOption(manipulableChars, currentIndex+1, maxLength, searchedChar, searchedPosition, prevWord.substring(1, prevWord.length()), node.nextLetter);
+				if (resultWord != null) {
+					// Armamos la palabra resultante
+					resultWord = c.toString().concat(resultWord);
+					if (	searchedChar != null
+							&& searchedPosition == currentIndex
+							&& resultWord.charAt(currentIndex) != searchedChar )
+					{
+						resultWord = null;
+						node = trie.bestNode(manipulableChars, node.next);
 					}
-					else	node = trie.bestNode(manipulableChars,node.next);
 				}
+				else {
+					node = trie.bestNode(manipulableChars, node.next);
+				}
+			}
 		}
-		else if (searchedPosition!=currentIndex || searchedChar == null){
+		else if (searchedPosition != currentIndex || searchedChar == null){
 			node = trie.bestNode(manipulableChars);
 		}else{
 			node = trie.containingCharacter(searchedChar);
-			if(!manipulableChars.contains(searchedChar))
+			if(manipulableChars.get(searchedChar) <= 0)
 				node = trie.bestNode(manipulableChars);
 		}
 		
@@ -252,7 +258,7 @@ public class Trie {
 			return "";
 		
 		//(Eric v8)Agrega al caracter de fin a las posibilidades
-		if (currentIndex == 2)	manipulableChars.add(END_CHAR);
+		if (currentIndex == 2)	manipulableChars.put(END_CHAR, manipulableChars.get(END_CHAR)+1);
 		
 		Character currentChar = null;
 		
@@ -265,13 +271,13 @@ public class Trie {
 			//(Eric v13) Esto seria joya si se agrega a nextOption, pero no se puede
 			if (resultWord != null) {
 				resultWord = currentChar.toString().concat(resultWord);
-				if(searchedChar!= null && searchedPosition == currentIndex && !(resultWord.charAt(0)==searchedChar)){
+				if(searchedChar!= null && searchedPosition == currentIndex && !(resultWord.charAt(0) == searchedChar)){
 					resultWord = null;
 					node = trie.bestNode(manipulableChars,node.next);
 				}
 					
 			}
-			else	node = trie.bestNode(manipulableChars,node.next);
+			else node = trie.bestNode(manipulableChars,node.next);
 		}
 
 		return resultWord;
@@ -279,7 +285,7 @@ public class Trie {
 	
 	//Si queres lo comento, reemplace por la seccion de codigo para no repetir
 	public String nextOption(
-			List<Character> manipulableChars,
+			Map<Character, Integer> manipulableChars,
 			int currentIndex,/*(Eric v8) Esto sirve para decir cuando va(n) la(s) ficha(s) fija(s), solo falta ver si las pasamos por listas o arrays, etc*/
 			int maxLength, /*(Eric v8) Serviria para no buscar de mas, se pueden poner 7 fichas*/
 			Character searchedChar,
@@ -287,84 +293,27 @@ public class Trie {
 			Node node){
 		
 		Character currentChar = node.value;
-		manipulableChars.remove(currentChar);
+		manipulableChars.put(currentChar, manipulableChars.get(currentChar)-1);
 		// baja un nivel. Busca la mejor subopcion
 		String resultWord = bestOption(manipulableChars, currentIndex+1, maxLength, searchedChar, searchedPosition, null,  node.nextLetter);
 		
 		//(Eric v8)Devuelve el caracter que se borro al array, ya que va a ser reutiizado
-		manipulableChars.add(currentChar);
+		manipulableChars.put(currentChar, manipulableChars.get(currentChar)+1);
 		return resultWord;
 	}
 
 	/**
-	 * Recorre horizontalmente los nodos hasta que uno lo contenga
+	 * Recorre horizontalmente los nodos hasta que uno
+	 * este disponible, su valor sea una letra disponible
 	 */
-	private Node bestNode( List<Character> manipulableChars) {
+	private Node bestNode( Map<Character, Integer> manipulableChars) {
 		return bestNode(manipulableChars, first);
 	}
 	
-	private Node bestNode( List<Character> manipulableChars, Node node) {
+	private Node bestNode( Map<Character, Integer> manipulableChars, Node node) {
 		if (node == null) return null;
-		if (manipulableChars.contains(node.value)) return node;
+		if (manipulableChars.get(node.value) > 0) return node;
 		return bestNode(manipulableChars, node.next);
 	}
-	
-	/**
-	 * Pseudo codigo
-	 * @param trie
-	 * @param available
-	 * @return
-	 */
-	private String moveHorizontally(Trie trie, List<Character> available) {
-		
-		if (trie == null) return "";
-		
-		Node currentNode = trie.first;
-		
-		while (currentNode != null) {
-			
-			if (available.contains(currentNode.value)) {
-				
-				// Marcar como letra usada 
-				available.remove(currentNode.value);
-				
-				// descender en el trie
-				String str = moveHorizontally(currentNode.nextLetter, available);
-				if (str != null) {
-					// Significa que encontre la palabra en mi sub-trie
-					// la junto con mi valor y seguimos pa delante
-					//TODO: Hacer un remove de la palabra recien usada
-					return currentNode.value.toString().concat(str);
-				}
-				// Mi sub-trie no encontro la palabra
-				// La repongo entonces
-				available.add(currentNode.value);
-				
-			}
-			
-			currentNode = currentNode.next;
-		}
-		
-		return null;
-		
-	}
-	
-	public static void moveVertically(Trie t) {
-		
-		if (t == null) return;
-		
-		Node current = t.first;
-		
-		while (current != null) {
-			
-			moveVertically(current.nextLetter);
-			
-			current = current.next;
-		}
-		
-		
-	}
-	
-
 	
 }
