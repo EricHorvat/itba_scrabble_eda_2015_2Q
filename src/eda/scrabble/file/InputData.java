@@ -14,7 +14,7 @@ import eda.scrabble.Game;
 
 public class InputData{
 	
-	private final static boolean DEBUG = true;
+	private final static boolean DEBUG = false;
 	
 	public enum DictionaryFillStrategy {
 		NONE,
@@ -104,8 +104,7 @@ public class InputData{
 				String word = it.next().toUpperCase();
 				if (!(2 <= word.length() && word.length() <= 7 && containsAll(word, characters))) {
 					it.remove();
-					if (DEBUG)
-						System.out.println("Removing " + word + " from collection");
+					if (DEBUG) System.out.println("Removing " + word + " from collection");
 				}
 			}
 			
@@ -149,10 +148,7 @@ public class InputData{
 			dict.add(word.toUpperCase());
 		}
 		
-		if (DEBUG)
-			System.out.println(dict);
-		
-		//Trie.moveVertically(dict);
+		if (DEBUG) System.out.println(dict);
 		
 		return dict;
 	}

@@ -1,22 +1,33 @@
 package eda.scrabble;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import eda.scrabble.Game.Direction;
+import eda.scrabble.Game.GameParameters;
 import eda.scrabble.Game.LetterXY;
 import eda.scrabble.Game.WordXY;
 import eda.scrabble.file.InputData;
 
 public class ExactGame extends Game {
 	
+	Grid bestGrid;
 	
+	int numberOfLetters;
 	
-	public ExactGame() {
-		super();
+	Map<Integer, Boolean> visitedGrids; 
+	
+	public ExactGame(GameParameters params) {
+		super(params);
+		
+		visitedGrids = new HashMap<>();
 	}
 	
-	private void possibleSolution1(List<LetterXY> used) {
+	private void possibleSolution1(List<LetterXY> used, int score) {
 		
 		String aux = null;
 		WordXY toAdd = null;
@@ -24,6 +35,16 @@ public class ExactGame extends Game {
 		LetterXY letter = null;
 		
 		if (DEBUG) printUsed(used);
+		
+		int sum = 0;
+		for (Entry<Character, Integer> e : grid.characters.entrySet()) {
+			if (e.getValue() > 0)
+				sum += e.getValue()*VALUE_MAP.get(e.getKey());
+		}
+		
+		if (score+sum < maxScore) {
+			return;
+		}
 		
 		// Backup used letters for restauration later
 		List<LetterXY> backup = new ArrayList<>(grid.size()*grid.size());
@@ -42,12 +63,12 @@ public class ExactGame extends Game {
 				// Show available chars
 				if (DEBUG) {
 					List<Character> l = getAvailableChars();
-					System.out.println("("+l.size()+"): "+l);
+					System.out.println("("+l.size()+"/"+numberOfLetters+"/"+(numberOfLetters-l.size())+"): "+l + " " + grid.characters);
 				}
 				
 				// Character in the intersection should be added to available chars
 				// since it isnt available but next word will contain this letter
-				addCharacter(letter.c);
+				grid.addCharacter(letter.c);
 				
 				if (DEBUG) System.out.println("Adding " + letter.c + " for search");
 				
@@ -61,13 +82,20 @@ public class ExactGame extends Game {
 				// letter.c
 				//
 				// Si encuentra la palabra, me remueve sus caracters de characters
-				aux = dictionary.bestLimitedOptionAfter(characters, MAX_LENGTH_WORD, letter.c, aux);
+				aux = dictionary.bestLimitedOptionAfter(grid.characters, MAX_LENGTH_WORD, letter.c, aux);
 				
-				if (DEBUG) System.out.println("/SEARCH/"+letter.word.word+"/"+ letter.c + "/"+aux);
+				Coordinate letterIndex2 = letter.word.pos;//letter.word.word.indexOf(letter.c);
+				
+				if (DEBUG) {
+					if (letter.word.direction == Direction.HORIZONTAL)
+						System.out.println("/SEARCH/"+letter.word.word+"/"+ letter.c + "/"+aux+"("+(letterIndex2.x+letter.pos)+","+(letterIndex2.y)+")");
+					else
+						System.out.println("/SEARCH/"+letter.word.word+"/"+ letter.c + "/"+aux+"("+letterIndex2.x+","+(letterIndex2.y+letter.pos)+")");
+				}
 				if (DEBUG) System.out.println("Removing " + letter.c + ". Already searched");
 				
 				// Since we added letter.c we should remove it
-				removeCharacter(letter.c);
+				grid.removeCharacter(letter.c);
 				
 				// Si aux == null ==> con este caracter no hay mas palabras para buscar
 				if (aux == null) {
@@ -81,13 +109,14 @@ public class ExactGame extends Game {
 				// Hacemos la matematica para que en la grilla se coloque todo prolijo
 				// y en su lugar
 				int intersectionIndex = aux.indexOf(letter.c);
-				int letterIndex = letter.word.word.indexOf(letter.c);
+				int letterIndex = letter.pos;
+				//letter.word.word.indexOf(letter.c);
 				
 				// Marcamos a la interseccion como lugar ocupado
 				if (letter.word.direction == Direction.HORIZONTAL) {
-					markOccupied(letter.word.pos.x+letterIndex, letter.word.pos.y);
+					grid.markOccupied(letter.word.pos.x+letterIndex, letter.word.pos.y);
 				} else {
-					markOccupied(letter.word.pos.x, letter.word.pos.y+letterIndex);
+					grid.markOccupied(letter.word.pos.x, letter.word.pos.y+letterIndex);
 				}
 				
 				// Attempt to add word
@@ -98,33 +127,25 @@ public class ExactGame extends Game {
 						toAdd = addWord(letter.word.pos.x-intersectionIndex, letter.word.pos.y+letterIndex, Direction.HORIZONTAL, aux);
 					}
 					
-				} catch (IllegalArgumentException ex) {
+				} catch (AddWordException ex) {
 					// Reseteamos porque la palabra no se pudo agregar
 					if (DEBUG) System.out.println(aux + " was not added. " + ex.getMessage());
 					
 					// Marcamos el lugar que habiamos marcado como ocupado
 					// como libre porque no agregamos la palabra
 					if (letter.word.direction == Direction.HORIZONTAL) {
-						markAvailable(letter.word.pos.x+letterIndex, letter.word.pos.y);
+						grid.markAvailable(letter.word.pos.x+letterIndex, letter.word.pos.y);
 					} else {
-						markAvailable(letter.word.pos.x, letter.word.pos.y+letterIndex);
+						grid.markAvailable(letter.word.pos.x, letter.word.pos.y+letterIndex);
 					}
 					
-					// Devolvemos los caracteres que no se agregaron al conjunto de caracteres
-					// disponibles
-					// OjO, menos el de la interseccion porque lo usa la palabra anterior
-					for (int j = 0; j < aux.length(); j++) {
-						Character c = (Character)aux.charAt(j);
-						if (j != intersectionIndex) {
-							addCharacter(c);
-						}
-					}
+					grid.removeCharacter(letter.c);
 					
 					// Seguimos y probamos si la proxima palabra calza en este lugar
 					continue;
 				}
 				
-				
+//				removeCharacter(letter.c);
 				
 				// Sacamos a @{letter} de @{used} para que cuando entre en la recursiva
 				// No se ponga a buscar palabras para calzar en la interseccion
@@ -133,14 +154,20 @@ public class ExactGame extends Game {
 				
 				// Nos fijamos si este es mejor tablero que el anterior mejor
 				// De ser asi actualizamos
-				int score = grid.getScore();
-				if (score > maxScore)
+				score = grid.getScore();
+				if (score > maxScore) {
 					maxScore = score;
+					bestGrid = new Grid(grid);
+				}
 				
 				//TODO: Aca cuando implementemos Ant y toda la bola habria que preguntar
 				//     por la opcion --display 
 				// Mostramos el tablero
-				grid.printSimple();
+				if (DEBUG) {
+					grid.print();
+				} else {
+					grid.printSimple();
+				}
 				
 				
 				// Agregamos los caracteres que en la recursiva se van a usar para buscar
@@ -148,12 +175,28 @@ public class ExactGame extends Game {
 				for (int j = 0; j < aux.length(); j++) {
 					Character c = (Character)aux.charAt(j);
 					if (j != intersectionIndex) {
-						used.add(new LetterXY(toAdd, c));
+						if (toAdd.direction == Direction.HORIZONTAL) {
+							used.add(new LetterXY(toAdd, c, j));
+						} else {
+							used.add(new LetterXY(toAdd, c, j));
+						}
 					}
 				}
 				
-				// Perform recursive call to same method
-				possibleSolution1(used);
+				int hc = grid.hashCode();
+				Boolean visited = visitedGrids.get(hc); 
+				
+				if (visited == null || visited == false) {
+				
+					visitedGrids.put(hc, true);
+					
+					// Perform recursive call to same method
+					possibleSolution1(used, score);
+				} else {
+					
+					if (DEBUG) System.out.println("already visited");
+					
+				}
 				
 				/*
 				 * #################
@@ -168,9 +211,9 @@ public class ExactGame extends Game {
 				// Marcamos la interseccion como disponible porque ya que sacamos la palabra
 				// no hay mas interseccion
 				if (letter.word.direction == Direction.HORIZONTAL) {
-					markAvailable(letter.word.pos.x+letterIndex, letter.word.pos.y);
+					grid.markAvailable(letter.word.pos.x+letterIndex, letter.word.pos.y);
 				} else {
-					markAvailable(letter.word.pos.x, letter.word.pos.y+letterIndex);
+					grid.markAvailable(letter.word.pos.x, letter.word.pos.y+letterIndex);
 				}
 				
 				
@@ -179,11 +222,9 @@ public class ExactGame extends Game {
 				for (LetterXY l: backup)
 					used.add(l);
 				
-				
-				// Reponemos los caracteres que acabamos de consumir
-				for (int j = 0; j < aux.length(); j++) {
-					if (j != intersectionIndex)
-						addCharacter((Character)aux.charAt(j));
+				if (DEBUG) {
+					System.out.println("After rec call");
+					grid.print();
 				}
 				
 			}
@@ -196,6 +237,12 @@ public class ExactGame extends Game {
 			
 		}
 		
+	}
+	
+	private void cleanBoard() {
+	// Clean board
+		while (words.size() > 0)
+			removeWord(words.get(words.size()-1));
 	}
 	
 	/**
@@ -213,53 +260,65 @@ public class ExactGame extends Game {
 		
 		WordXY tmp = null;
 		
+		numberOfLetters = getAvailableChars().size();
+		
+		if (DEBUG) {
+			System.out.println("Initial Letters: " + numberOfLetters);
+		}
+		
 		for (String w : allWords) {
-			if (DEBUG) {
-				System.out.println("########################################");
-				System.out.println("------------ Starting from scratch");
-				System.out.println("########################################");
-			}
-			if (DEBUG) {
-				List<Character> li = getAvailableChars();
-				System.out.println("Available chars("+li.size()+"): " + li);
-			}
 			
 			int x = grid.size()/2-w.length()+1;
 			int y = grid.size()/2;
 			
-			
-			// Throws Exception but board should be empty
-			tmp = addWord(x, y, Direction.HORIZONTAL, w);
-			
-			// Mark characters as used
-			for (char c : w.toCharArray()) {
-				removeCharacter(c);
-			}
-			
-			if (DEBUG)
-				System.out.println("Printing initial board");
-			grid.print();
-			
 			// Probamos todas las posiciones posibles en el eje x
-			for (int i = x+1; i <= grid.size()/2; i++) {
-				for (char c : w.toCharArray()) {
-					l.add(new LetterXY(tmp, (Character)c));
+			for (int i = x; i <= x/*grid.size()/2*/; i++) {
+				
+				cleanBoard();
+				
+				if (DEBUG) {
+					System.out.println("########################################");
+					System.out.println("------------ Starting from scratch");
+					System.out.println("########################################");
 				}
-				possibleSolution1(l);
-				while (words.size() > 0)
-					removeWord(words.get(words.size()-1));
-				tmp = addWord(i, y, Direction.HORIZONTAL, w);
+				if (DEBUG) {
+					List<Character> li = getAvailableChars();
+					System.out.println("Available chars("+li.size()+"): " + li);
+					
+					if (numberOfLetters != li.size()) {
+						System.out.println("Inconsistency. Quiting now");
+						return;
+					}
+					
+				}
+				
+				// 	Throws Exception but board should be empty
+				try {
+					tmp = addWord(x, y, Direction.HORIZONTAL, w);
+				} catch (AddWordException e1) {
+					// No llega nunca el tablero esta siempre vacio
+				}
+				
+				if (DEBUG) System.out.println("Printing initial board");
+				grid.print();
+				
+				for (int j = 0; j < w.length(); j++) {
+					// Mark characters as used
+					grid.removeCharacter((Character)w.charAt(j));
+					l.add(new LetterXY(tmp, (Character)w.charAt(j), j));
+				}
+				
+				possibleSolution1(l, 0);
+				
+				
 				l.clear();
 			}
 			
-			for (char c : w.toCharArray()) {
-				addCharacter((Character)c);
-			}
-			
-			removeWord(words.get(words.size()-1));
 		}
 		
 		System.out.println("Max Score is: " + maxScore);
+		
+		bestGrid.print();
 	}
 
 }

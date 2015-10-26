@@ -1,5 +1,10 @@
 package eda.scrabble;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import eda.scrabble.Game.Coordinate;
+
 public class Grid {
 
 	public final static int GRID_SIZE = 15;
@@ -17,11 +22,18 @@ public class Grid {
 	
 	public final static boolean COLORIZE = false;
 	
-	public final static boolean DEBUG = true;
+	public final static boolean DEBUG = false;
 	
-	char[][] grid = new char[GRID_SIZE][GRID_SIZE];
+	private char[][] grid = new char[GRID_SIZE][GRID_SIZE];
 	
-	public Grid() {
+	protected Map<Coordinate, Boolean> intersections;
+	protected Map<Character, Integer> characters;
+	
+	public Grid(Map<Character, Integer> characters) {
+
+		intersections = new HashMap<Game.Coordinate, Boolean>();
+		this.characters = characters; 
+		
 		for (int i = 0; i < GRID_SIZE; i++) {
 			for (int j = 0; j < GRID_SIZE; j++) {
 				grid[i][j] = EMPTY_SPACE;
@@ -30,6 +42,9 @@ public class Grid {
 	}
 	
 	public Grid(Grid grid) {
+		intersections = new HashMap<Coordinate, Boolean>(grid.intersections);
+		characters = new HashMap<Character, Integer>(grid.characters);
+		
 		for (int i = 0; i < GRID_SIZE; i++) {
 			for (int j = 0; j < GRID_SIZE; j++) {
 				this.grid[i][j] = grid.get(i, j);
@@ -58,6 +73,7 @@ public class Grid {
 	}
 	
 	public void print() {
+		int n = 0;
 		System.out.print(" +");
 		for (int i = 0; i < GRID_SIZE; i++) {
 			int h = i %10; 
@@ -72,6 +88,8 @@ public class Grid {
 			int h = i%10;
 			System.out.print(String.valueOf(h)+'|');;
 			for (int j = 0; j < GRID_SIZE; j++) {
+				if (grid[i][j] != EMPTY_SPACE)
+					n++;
 				if (DEBUG)
 //					if (COLORIZE && Game.getInstance().isOccupied(j, i))
 //						System.out.print(ANSI_WHITE + grid[i][j]+ ANSI_RESET +  "|");
@@ -93,6 +111,7 @@ public class Grid {
 			System.out.print(h+"|");
 		}
 		System.out.println('+');
+		System.out.println("used characters: " + n);
 	}
 	
 	public void printSimple() {
@@ -110,8 +129,89 @@ public class Grid {
 		}
 	}
 	
+	public boolean isOccupied(int x, int y) {
+		Boolean b = intersections.get(new Coordinate(x,y));
+		return b != null && b == true;
+	}
+	
+	public boolean isIntersection(int x, int y) {
+		return isOccupied(x, y);
+	}
+	
+	public void markOccupied(int x, int y) {
+		if (DEBUG) System.out.println("Mark Ocuppied ("+x+","+y+")");
+		
+		markIntersection(x, y);
+	}
+	
+	public void markAvailable(int x, int y) {
+		if (DEBUG) System.out.println("Mark Available ("+x+","+y+")");
+		
+		clearIntersection(x, y);
+	}
+	
+	// Aliases
+	public void markIntersection(int x, int y) {
+		
+		markIntersection(new Coordinate(x, y));
+	}
+	
+	public void markIntersection(Coordinate pos) {
+		
+		intersections.put(pos, true);
+	}
+	
+	public void clearIntersection(int x, int y) {
+		
+		clearIntersection(new Coordinate(x, y));
+	}
+	
+	public void clearIntersection(Coordinate pos) {
+		
+		intersections.put(pos, false);
+	}
+	
+	public void addCharacter(Character c) {
+		
+		characters.put(c, characters.get(c) + 1);
+	}
+	
+	public void removeCharacter(Character c) {
+		
+		characters.put(c, characters.get(c) - 1);
+	}
+	
+	/**
+	 * @return the _characters
+	 */
+	public Map<Character, Integer> getCharacters() {
+		return characters;
+	}
+
+	/**
+	 * @param _characters the _characters to set
+	 */
+	public Grid setCharacters(Map<Character, Integer> _characters) {
+		this.characters = _characters;
+		return this;
+	}
+	
 	public int size() {
 		return GRID_SIZE;
+	}
+	
+	@Override
+	public int hashCode() {
+		
+		StringBuffer sb = new StringBuffer(GRID_SIZE*GRID_SIZE);
+
+		for (int i = 0; i < GRID_SIZE; i++) {
+			for (int j = 0; j < GRID_SIZE; j++) {
+				sb.append(grid[i][j]);
+			}
+		}
+		
+		return sb.toString().hashCode();
 	}
 	
 }
