@@ -184,7 +184,7 @@ public abstract class Game {
 		
 	}
 	
-	protected final static String DICTIONARY_FILENAME = "dic2.txt";
+	protected final static String DICTIONARY_FILENAME = "dic7.txt";
 	protected final static String LETTERS_FILENAME = "l7.txt";
 	protected final static String CHAR_VALUE_FILENAME = "charValue.txt";
 	
