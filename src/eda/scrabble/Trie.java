@@ -298,7 +298,7 @@ public class Trie {
 		String resultWord = bestOption(manipulableChars, currentIndex+1, maxLength, searchedChar, searchedPosition, null,  node.nextLetter);
 		
 		//(Eric v8)Devuelve el caracter que se borro al array, ya que va a ser reutiizado
-		manipulableChars.put(currentChar, manipulableChars.get(currentChar)+1);
+		manipulableChars.put(currentChar, manipulableChars.get(currentChar) + 1);
 		return resultWord;
 	}
 

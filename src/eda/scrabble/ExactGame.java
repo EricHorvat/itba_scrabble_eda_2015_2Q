@@ -65,10 +65,10 @@ public class ExactGame extends Game {
 //			while (true) {
 				
 				// Show available chars
-				if (DEBUG) {
-					List<Character> l = getAvailableChars();
-					System.out.println("("+l.size()+"/"+numberOfLetters+"/"+(numberOfLetters-l.size())+"): "+l + " " + grid.characters);
-				}
+//				if (DEBUG) {
+					List<Character> lj = getAvailableChars(grid.characters);
+					System.out.println("("+lj.size()+"/"+numberOfLetters+"/"+(numberOfLetters-lj.size())+"): "+lj + " " + grid.characters);
+//				}
 				
 				// Character in the intersection should be added to available chars
 				// since it isnt available but next word will contain this letter
@@ -290,15 +290,16 @@ public class ExactGame extends Game {
 					System.out.println("------------ Starting from scratch");
 					System.out.println("########################################");
 				}
+				List<Character> li = getAvailableChars(grid.characters);
 				if (DEBUG) {
-					List<Character> li = getAvailableChars();
+					
 					System.out.println("Available chars("+li.size()+"): " + li);
 					
-					if (numberOfLetters != li.size()) {
-						System.out.println("Inconsistency. Quiting now");
-						return;
-					}
-					
+				}
+				
+				if (numberOfLetters != li.size()) {
+					System.out.println("Inconsistency. Quiting now");
+					return;
 				}
 				
 				// 	Throws Exception but board should be empty
@@ -306,6 +307,7 @@ public class ExactGame extends Game {
 					tmp = addWord(i, y, Direction.HORIZONTAL, w);
 				} catch (AddWordException e1) {
 					// No llega nunca el tablero esta siempre vacio
+//					System.out.println(e1.getMessage());
 				}
 				
 				if (DEBUG) System.out.println("Printing initial board");
@@ -326,10 +328,10 @@ public class ExactGame extends Game {
 		}
 		
 //		if (DEBUG) System.out.println("Max Score is: " + maxScore);
-//		System.out.println("Max Score is: " + maxScore);
+		System.out.println("Max Score is: " + maxScore);
 //		bestGrid.printSimple();
 		try {
-			grid.printSimpleDump(params.outputFileName);
+			bestGrid.printSimpleDump(params.outputFileName);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

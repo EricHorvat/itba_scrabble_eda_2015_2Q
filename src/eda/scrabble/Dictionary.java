@@ -77,23 +77,24 @@ public class Dictionary extends Trie {
 	{
 		//List<Character> manipulableChars = new ArrayList<Character>(availableChars);
 		String best = null;
-		for( int i =0;i < maxLength && best == null; i++){	
+		for( int i =0; i < maxLength && best == null; i++){	
 			best = bestOption(availableChars, 0, maxLength, searchedChar, i, prevWord, this);	
-			while(best != null && searchedChar != null && !best.contains(searchedChar.toString())){
+			while (best != null && searchedChar != null && !best.contains(searchedChar.toString())) {
 				best = bestOption(availableChars, 0, maxLength, searchedChar, i, best, this);
 			}
 		}
-		while(availableChars.get(END_CHAR) > 0)
-		{
-			availableChars.put(END_CHAR, availableChars.get((Character)END_CHAR)-1);
+		while (availableChars.get(END_CHAR) > 0) {
+			availableChars.put(END_CHAR, availableChars.get((Character)END_CHAR) - 1);
 		}
-		if(best!= null)
-		{
+		if (best != null) {
 			for (int i = 0; i < best.length(); i++) {
-				availableChars.put((Character)best.charAt(i), availableChars.get((Character)best.charAt(i)) -1);
+				availableChars.put((Character)best.charAt(i), availableChars.get((Character)best.charAt(i)) - 1);
 			}
-			if(searchedChar!=null)
-				availableChars.put(searchedChar, availableChars.get(searchedChar)+1);
+			if (searchedChar != null) {
+				availableChars.put(searchedChar, availableChars.get(searchedChar) + 1);
+			}
+		} else {
+			
 		}
 		return best;
 	}
