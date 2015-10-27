@@ -1,5 +1,6 @@
 package eda.scrabble;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,7 +72,7 @@ public class ExactGame extends Game {
 				
 				// Character in the intersection should be added to available chars
 				// since it isnt available but next word will contain this letter
-				//grid.addCharacter(letter.c);
+//				grid.addCharacter(letter.c);
 				
 				if (DEBUG) System.out.println("Adding " + letter.c + " for search");
 				
@@ -98,7 +99,7 @@ public class ExactGame extends Game {
 				if (DEBUG) System.out.println("Removing " + letter.c + ". Already searched");
 				
 				// Since we added letter.c we should remove it
-				//grid.removeCharacter(letter.c);
+//				grid.removeCharacter(letter.c);
 				
 				// Si aux == null ==> con este caracter no hay mas palabras para buscar
 				if (aux != null) {
@@ -326,7 +327,12 @@ public class ExactGame extends Game {
 		
 //		if (DEBUG) System.out.println("Max Score is: " + maxScore);
 //		System.out.println("Max Score is: " + maxScore);
-		bestGrid.printSimple();
+//		bestGrid.printSimple();
+		try {
+			grid.printSimpleDump(params.outputFileName);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

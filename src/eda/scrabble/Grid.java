@@ -1,5 +1,11 @@
 package eda.scrabble;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -127,6 +133,24 @@ public class Grid {
 			}
 			System.out.println();
 		}
+	}
+	
+	public void printSimpleDump(String outputFile) throws IOException {
+		
+		File fout = new File(outputFile);
+		
+		FileOutputStream fos = new FileOutputStream(fout);
+		
+		BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fos));
+		
+		for (int i = 0; i < GRID_SIZE; i++) {
+			for (int j = 0; j < GRID_SIZE; j++) {
+				bufferedWriter.write(grid[i][j]);			
+			}
+			bufferedWriter.newLine();
+		}
+		
+		bufferedWriter.close();
 	}
 	
 	public boolean isOccupied(int x, int y) {

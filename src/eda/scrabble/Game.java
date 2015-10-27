@@ -14,11 +14,11 @@ public abstract class Game {
 	
 	public static class GameParameters {
 		
-		private String dictionaryFileName;
-		private String lettersFileName;
-		private String outputFileName;
-		private boolean visual = false;
-		private double maxTime = 0;
+		protected String dictionaryFileName;
+		protected String lettersFileName;
+		protected String outputFileName;
+		protected boolean visual = false;
+		protected double maxTime = 0;
 
 		/**
 		 * @param dictionaryFileName the dictionaryFileName to set
@@ -184,8 +184,8 @@ public abstract class Game {
 		
 	}
 	
-	protected final static String DICTIONARY_FILENAME = "words2.txt";
-	protected final static String LETTERS_FILENAME = "letters2.txt";
+	protected final static String DICTIONARY_FILENAME = "dic2.txt";
+	protected final static String LETTERS_FILENAME = "l2.txt";
 	protected final static String CHAR_VALUE_FILENAME = "charValue.txt";
 	
 	protected final static int MAX_LENGTH_WORD = 7;

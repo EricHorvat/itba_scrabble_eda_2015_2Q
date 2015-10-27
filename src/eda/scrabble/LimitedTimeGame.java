@@ -1,5 +1,10 @@
 package eda.scrabble;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -390,7 +395,25 @@ public class LimitedTimeGame extends Game {
 		} while ( System.nanoTime() < this.eta );
 		
 //		System.out.println("Max Score: " + bestestBoard.getScore());
-		bestestBoard.printSimple();
+		if (ANT) {
+			
+			
+			try {
+				board.printSimpleDump(params.outputFileName);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+//			writer.println("The first line");
+//			writer.println("The second line");
+//			writer.close();
+			
+			
+		
+			
+			
+			
+		}
 		
 	}
 	
