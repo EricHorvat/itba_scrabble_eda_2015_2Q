@@ -365,6 +365,7 @@ public class LimitedTimeGame extends Game {
 					}
 					letters.clear();
 					for (int j = 0; j < w.word.length(); j++) {
+						board.removeCharacter((Character)w.word.charAt(j));
 						letters.add(new LetterXY(w, (Character)w.word.charAt(j), j));
 					}
 				}
@@ -388,7 +389,7 @@ public class LimitedTimeGame extends Game {
 			
 		} while ( System.nanoTime() < this.eta );
 		
-		System.out.println("Max Score: " + bestestBoard.getScore());
+//		System.out.println("Max Score: " + bestestBoard.getScore());
 		bestestBoard.printSimple();
 		
 	}
@@ -523,8 +524,8 @@ public class LimitedTimeGame extends Game {
 		preHillClimb(boards.get(0), 1);
 				//this.boards.get(best).getDictionary(), this.boards.get(best), this._words.get(best));
 		
-		long end = System.nanoTime() - start; 
-		System.out.println("Run Time: " + end/1000000.0 + "ms");
+//		long end = System.nanoTime() - start; 
+//		System.out.println("Run Time: " + end/1000000.0 + "ms");
 		
 	}
 

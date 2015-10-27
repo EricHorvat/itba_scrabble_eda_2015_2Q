@@ -325,8 +325,8 @@ public class ExactGame extends Game {
 		}
 		
 //		if (DEBUG) System.out.println("Max Score is: " + maxScore);
-		System.out.println("Max Score is: " + maxScore);
-		bestGrid.print();
+//		System.out.println("Max Score is: " + maxScore);
+		bestGrid.printSimple();
 	}
 
 }
