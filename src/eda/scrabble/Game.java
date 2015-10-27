@@ -184,7 +184,7 @@ public abstract class Game {
 		
 	}
 	
-	protected final static String DICTIONARY_FILENAME = "dic7.txt";
+	protected final static String DICTIONARY_FILENAME = "dic14.txt";
 	protected final static String LETTERS_FILENAME = "l7.txt";
 	protected final static String CHAR_VALUE_FILENAME = "charValue.txt";
 	
@@ -195,9 +195,7 @@ public abstract class Game {
 	
 	public final static Map<Character,Integer> VALUE_MAP = InputData.fillValueMap(CHAR_VALUE_FILENAME);
 	
-	protected Grid grid;
-	
-	protected Dictionary dictionary;
+	protected Board grid;
 	
 	protected List<WordXY> words = new ArrayList<WordXY>();
 	
@@ -213,7 +211,8 @@ public abstract class Game {
 	public Game(GameParameters params) {
 		this.params = params;
 		long start = System.nanoTime();
-		Map<Character, Integer> map = new HashMap<>();
+		Map<Character, Integer> map = new HashMap<Character, Integer>();
+		Dictionary dictionary = null;
 		if (ANT) {
 			map = InputData.getGameChars(params.lettersFileName);
 			dictionary = InputData.fillDictionary(
@@ -227,7 +226,8 @@ public abstract class Game {
 					InputData.DictionaryFillStrategy.HIGHEST_VALUE,
 					map);
 		}
-		grid = new Grid(map);
+		grid = new Board(map);
+		grid.setDictionary(dictionary);
 		long end = System.nanoTime() - start; 
 		System.out.println("Load Time: " + end/1000000.0 + "ms");
 	}
@@ -257,11 +257,11 @@ public abstract class Game {
 	}
 	
 	protected WordXY addWord(int x, int y, Direction d, String word) throws AddWordException {
-		return addWord(x, y, d, word, grid, null);
+		return addWord(x, y, d, word, grid, null, grid.getDictionary());
 	}
 	
-	protected WordXY addWord(int x, int y, Direction d, String word, Grid grid) throws AddWordException {
-		return addWord(x, y, d, word, grid, null);
+	protected WordXY addWord(int x, int y, Direction d, String word, Board grid) throws AddWordException {
+		return addWord(x, y, d, word, grid, null, grid.getDictionary());
 	}
 	
 	/**
@@ -274,7 +274,7 @@ public abstract class Game {
 	 * @throws IllegalArgumentException
 	 */
 	
-	protected WordXY addWord(int x, int y, Direction d, String word, Grid grid, Deque<WordXY> words) throws AddWordException {
+	protected WordXY addWord(int x, int y, Direction d, String word, Grid grid, Deque<WordXY> words, Dictionary dictionary) throws AddWordException {
 		
 		boolean withinBounds = true;
 		
@@ -461,12 +461,8 @@ public abstract class Game {
 								// Borramos el caracter que habia
 								grid.set(x, j, Grid.EMPTY_SPACE);
 							}
-//							if (!isIntersection) {
-								// Devolvemos el caracter que consumimos
-//								if (DEBUG) System.out.println("Returning " + word.charAt(j-y));
-								if (DEBUG) System.out.print(word.charAt(j-y) + " ");
-								grid.addCharacter((Character)word.charAt(j-y));
-//							}
+							if (DEBUG) System.out.print(word.charAt(j-y) + " ");
+							grid.addCharacter((Character)word.charAt(j-y));
 						}
 						if (DEBUG) System.out.println();
 						
@@ -480,10 +476,11 @@ public abstract class Game {
 		
 		WordXY wordXY = new WordXY(word, new Coordinate(x, y), d);
 		
-		if (words != null)
+		if (words != null) {
 			words.push(wordXY);
-		else
+		} else {
 			this.words.add(wordXY);
+		}
 		
 		return wordXY;
 		

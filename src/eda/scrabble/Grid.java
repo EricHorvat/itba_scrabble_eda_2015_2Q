@@ -32,7 +32,7 @@ public class Grid {
 	public Grid(Map<Character, Integer> characters) {
 
 		intersections = new HashMap<Game.Coordinate, Boolean>();
-		this.characters = characters; 
+		this.characters = new HashMap<Character, Integer>(characters); 
 		
 		for (int i = 0; i < GRID_SIZE; i++) {
 			for (int j = 0; j < GRID_SIZE; j++) {
@@ -47,7 +47,7 @@ public class Grid {
 		
 		for (int i = 0; i < GRID_SIZE; i++) {
 			for (int j = 0; j < GRID_SIZE; j++) {
-				this.grid[i][j] = grid.get(i, j);
+				this.grid[i][j] = grid.get(j, i);
 			}
 		}
 	}
@@ -153,6 +153,8 @@ public class Grid {
 	// Aliases
 	public void markIntersection(int x, int y) {
 		
+		
+		
 		markIntersection(new Coordinate(x, y));
 	}
 	
@@ -213,5 +215,14 @@ public class Grid {
 		
 		return sb.toString().hashCode();
 	}
+
+	/**
+	 * @return the intersections
+	 */
+	public Map<Coordinate, Boolean> getIntersections() {
+		return intersections;
+	}
+	
+	
 	
 }

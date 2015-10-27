@@ -155,7 +155,7 @@ public class InputData{
 
 	public static Map<Character, Integer> getGameChars(String filename){
 
-		Map<Character, Integer> map = new HashMap<>();
+		Map<Character, Integer> map = new HashMap<Character, Integer>();
 		List<String> lines = readAllLines(filename);
 		
 		for (int i = 'A'; i <= 'Z'; i++)

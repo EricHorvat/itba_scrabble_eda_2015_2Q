@@ -24,7 +24,7 @@ public class ExactGame extends Game {
 	public ExactGame(GameParameters params) {
 		super(params);
 		
-		visitedGrids = new HashMap<>();
+		visitedGrids = new HashMap<Integer, Boolean>();
 	}
 	
 	private void possibleSolution1(List<LetterXY> used, int score) {
@@ -47,7 +47,7 @@ public class ExactGame extends Game {
 		}
 		
 		// Backup used letters for restauration later
-		List<LetterXY> backup = new ArrayList<>(grid.size()*grid.size());
+		List<LetterXY> backup = new ArrayList<LetterXY>(grid.size()*grid.size());
 		for (LetterXY l : used)
 			backup.add(l);
 		
@@ -166,7 +166,7 @@ public class ExactGame extends Game {
 				if (DEBUG) {
 					grid.print();
 				} else {
-					grid.printSimple();
+//					grid.printSimple();
 				}
 				
 				
@@ -256,7 +256,7 @@ public class ExactGame extends Game {
 		List<String> allWords = dictionary.getWords();
 		
 		// Reservo a lo sumo grid.size()^2 de letras
-		List<LetterXY> l = new ArrayList<>(grid.size()*grid.size());
+		List<LetterXY> l = new ArrayList<LetterXY>(grid.size()*grid.size());
 		
 		WordXY tmp = null;
 		
