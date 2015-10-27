@@ -280,7 +280,7 @@ public class ExactGame extends Game {
 			int y = grid.size()/2;
 			
 			// Probamos todas las posiciones posibles en el eje x
-			for (int i = x; i <= grid.size()/2; i++) {
+			for (int i = x; i <= grid.size()/2+1; i++) {
 				
 				cleanBoard();
 				
@@ -302,7 +302,7 @@ public class ExactGame extends Game {
 				
 				// 	Throws Exception but board should be empty
 				try {
-					tmp = addWord(x, y, Direction.HORIZONTAL, w);
+					tmp = addWord(i, y, Direction.HORIZONTAL, w);
 				} catch (AddWordException e1) {
 					// No llega nunca el tablero esta siempre vacio
 				}
@@ -326,7 +326,7 @@ public class ExactGame extends Game {
 		
 //		if (DEBUG) System.out.println("Max Score is: " + maxScore);
 		System.out.println("Max Score is: " + maxScore);
-		bestGrid.printSimple();
+		bestGrid.print();
 	}
 
 }

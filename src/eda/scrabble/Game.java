@@ -191,7 +191,7 @@ public abstract class Game {
 	protected final static int MAX_LENGTH_WORD = 7;
 	
 	protected final static boolean DEBUG = false;
-	protected final static boolean ANT = false;
+	protected final static boolean ANT = true;
 	
 	public final static Map<Character,Integer> VALUE_MAP = InputData.fillValueMap(CHAR_VALUE_FILENAME);
 	
@@ -203,7 +203,7 @@ public abstract class Game {
 	
 	protected GameParameters params;
 	
-	protected double eta = System.nanoTime()+10*Math.pow(10, 9);
+	protected double eta = System.nanoTime()+20*Math.pow(10, 9);
 	
 	public enum Direction {
 		HORIZONTAL,
