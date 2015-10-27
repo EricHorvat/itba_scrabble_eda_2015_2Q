@@ -82,7 +82,7 @@ public class ExactGame extends Game {
 				// letter.c
 				//
 				// Si encuentra la palabra, me remueve sus caracters de characters
-				aux = dictionary.bestLimitedOptionAfter(grid.characters, MAX_LENGTH_WORD, letter.c, aux);
+				aux = grid.getDictionary().bestLimitedOptionAfter(grid.characters, MAX_LENGTH_WORD, letter.c, aux);
 				
 				Coordinate letterIndex2 = letter.word.pos;//letter.word.word.indexOf(letter.c);
 				
@@ -253,7 +253,7 @@ public class ExactGame extends Game {
 	public void solve() {
 		maxScore = 0;
 		
-		List<String> allWords = dictionary.getWords();
+		List<String> allWords = grid.getDictionary().getWords();
 		
 		// Reservo a lo sumo grid.size()^2 de letras
 		List<LetterXY> l = new ArrayList<LetterXY>(grid.size()*grid.size());
@@ -272,7 +272,7 @@ public class ExactGame extends Game {
 			int y = grid.size()/2;
 			
 			// Probamos todas las posiciones posibles en el eje x
-			for (int i = x; i <= x/*grid.size()/2*/; i++) {
+			for (int i = x; i <= grid.size()/2; i++) {
 				
 				cleanBoard();
 				

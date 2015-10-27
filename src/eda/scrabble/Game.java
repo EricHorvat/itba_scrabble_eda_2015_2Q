@@ -184,8 +184,8 @@ public abstract class Game {
 		
 	}
 	
-	protected final static String DICTIONARY_FILENAME = "dic14.txt";
-	protected final static String LETTERS_FILENAME = "l7.txt";
+	protected final static String DICTIONARY_FILENAME = "words2.txt";
+	protected final static String LETTERS_FILENAME = "letters2.txt";
 	protected final static String CHAR_VALUE_FILENAME = "charValue.txt";
 	
 	protected final static int MAX_LENGTH_WORD = 7;
@@ -309,17 +309,13 @@ public abstract class Game {
 			case HORIZONTAL:
 				if (grid.get(x-1, y) != Grid.EMPTY_SPACE) {
 					for (int j = x; j < x+word.length(); j++) {
-//						if (!isOccupied(j, y)) {
 							grid.addCharacter((Character)word.charAt(j-x));
-//						}
 					}
 					throw new AddWordException("Horizontal failed left");
 				}
 				if (grid.get(x+word.length(), y) != Grid.EMPTY_SPACE) {
 					for (int j = x; j < x+word.length(); j++) {
-//						if (!isOccupied(j, y)) {
 							grid.addCharacter((Character)word.charAt(j-x));
-//						}
 					}
 					throw new AddWordException("horizontal failed right");
 				}
@@ -341,7 +337,6 @@ public abstract class Game {
 						if (!dictionary.contains(s)) {
 							
 							// Marcamos para eliminar
-							
 							needsRemoval = true;
 						}
 					}
@@ -357,7 +352,6 @@ public abstract class Game {
 						if (!dictionary.contains(s)) {
 							
 							// Marcamos para eliminar
-							
 							needsRemoval = true;
 						}
 					}
@@ -365,7 +359,6 @@ public abstract class Game {
 					if (!needsRemoval && grid.get(i, y) != Grid.EMPTY_SPACE && !occupied) {
 						
 						// Marcamos para eliminar
-						
 						needsRemoval = true;
 					}
 					
@@ -398,17 +391,13 @@ public abstract class Game {
 			case VERTICAL:
 				if (grid.get(x, y-1) != Grid.EMPTY_SPACE) {
 					for (int j = y; j < y+word.length(); j++) {
-//						if (!isOccupied(x, j)) {
 							grid.addCharacter((Character)word.charAt(j-y));
-//						}
 					}
 					throw new AddWordException("vertical failed top found "+grid.get(x, y-1));
 				}
 				if (grid.get(x,word.length()+y) != Grid.EMPTY_SPACE) {
 					for (int j = y; j < y+word.length(); j++) {
-//						if (!isOccupied(x, j)) {
 							grid.addCharacter((Character)word.charAt(j-y));
-//						}
 					}
 					throw new AddWordException("vertical failed bottom found "+grid.get(x, word.length()+y));
 				}
