@@ -25,6 +25,8 @@ public class LimitedTimeGame extends Game {
 	
 	private final static boolean STOCHASTIC = true;
 	
+	private Board bestestBoard;
+	
 	public LimitedTimeGame(GameParameters params) {
 		super(params);
 		
@@ -253,7 +255,7 @@ public class LimitedTimeGame extends Game {
 				
 				board.removeCharacter(letter.c);
 				
-				if (aux == null) {
+				if (aux != null) {
 //					break;
 //				}
 				
@@ -326,13 +328,28 @@ public class LimitedTimeGame extends Game {
 			
 		}
 		
+		if (bestBoard.getScore() > maxScore) {
+			bestestBoard = bestBoard;
+			maxScore = bestBoard.getScore();
+		}
+		
+		if ( System.nanoTime() > this.eta ) {
+			
+			//TODO: Print bestest
+			System.out.println("Max Score: " + bestestBoard.getScore());
+			bestestBoard.print();
+			
+			return;
+		}
+		
 		System.out.println("best board");
 		bestBoard.print();
 		System.out.println("bestScore: " + bestBoard.getScore());
 		
+		
+		
 		if (wordToAdd == null) {
 			System.out.println("wordToAdd=null");
-			System.out.println(board.getIntersections());
 			board.print();
 			try {
 				WordXY removed = removeWord(board.getWords(), board);

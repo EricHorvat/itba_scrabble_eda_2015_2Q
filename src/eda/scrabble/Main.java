@@ -6,10 +6,18 @@ public class Main {
 
 	private final static boolean EXACT_GAME = true;
 	
+	private final static boolean DEBUG = false;
 	
 	private static GameParameters parseParameters(String[] args) {
 		
 		GameParameters params = new GameParameters();
+		
+		if (DEBUG) {
+			System.out.println("received: ");
+			for (String s : args)
+				System.out.print(s + " ");
+			System.out.println();
+		}
 		
 		//dict
 		try {
@@ -31,7 +39,7 @@ public class Main {
 		}
 		params.setLettersFileName(args[1]);
 		
-		//letters
+		//output
 		try {
 			if (args[2].trim().equals("")) {
 				return null;
@@ -41,7 +49,7 @@ public class Main {
 		}
 		params.setOutputFileName(args[2]);
 		
-		//letters
+		//maxtime & visual
 		try {
 			if (!args[3].trim().equals("")) {
 				if (args[3].trim().equals("-visual")) {
@@ -50,11 +58,11 @@ public class Main {
 					
 					if (args[4].trim().equals("-maxtime")) {
 						
-						params.setMaxTime(Float.parseFloat(args[5]));
+						params.setMaxTime(Double.parseDouble(args[5]));
 						
 					}
 					
-				}
+				}				
 				else if (args[3].trim().equals("-maxtime")) {
 					
 					params.setMaxTime(Float.parseFloat(args[4]));
@@ -63,7 +71,7 @@ public class Main {
 				
 			}
 		} catch (IndexOutOfBoundsException ex) {
-			return null;
+//			return null;
 		}
 		
 		
@@ -100,7 +108,7 @@ public class Main {
 		game.start();
 		
 		long end = System.nanoTime() - start; 
-		System.out.println("Run Time: " + end/1000000.0 + "ms");
+		if (DEBUG) System.out.println("Run Time: " + end/1000000.0 + "ms");
 	}
 	
 

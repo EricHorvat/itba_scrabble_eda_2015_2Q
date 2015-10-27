@@ -42,9 +42,10 @@ public class ExactGame extends Game {
 				sum += e.getValue()*VALUE_MAP.get(e.getKey());
 		}
 		
-		if (score+sum < maxScore) {
+		// Signinfica que no me quedan mas letras
+		// Podamos
+		if (sum == 0)
 			return;
-		}
 		
 		// Backup used letters for restauration later
 		List<LetterXY> backup = new ArrayList<LetterXY>(grid.size()*grid.size());
@@ -57,8 +58,10 @@ public class ExactGame extends Game {
 		
 			letter = used.get(i);
 			
+			do {
+			
 			// Lookup all words available for inserting with letter=used.get(i)
-			while (true) {
+//			while (true) {
 				
 				// Show available chars
 				if (DEBUG) {
@@ -68,7 +71,7 @@ public class ExactGame extends Game {
 				
 				// Character in the intersection should be added to available chars
 				// since it isnt available but next word will contain this letter
-				grid.addCharacter(letter.c);
+				//grid.addCharacter(letter.c);
 				
 				if (DEBUG) System.out.println("Adding " + letter.c + " for search");
 				
@@ -95,139 +98,142 @@ public class ExactGame extends Game {
 				if (DEBUG) System.out.println("Removing " + letter.c + ". Already searched");
 				
 				// Since we added letter.c we should remove it
-				grid.removeCharacter(letter.c);
+				//grid.removeCharacter(letter.c);
 				
 				// Si aux == null ==> con este caracter no hay mas palabras para buscar
-				if (aux == null) {
+				if (aux != null) {
 					
 					// No hay mas palabras con esta letra (letter.c)
 					// ==> pasamos a la proxima
-					break;
-				}
+//					break;
+//				}
 				
 				
-				// Hacemos la matematica para que en la grilla se coloque todo prolijo
-				// y en su lugar
-				int intersectionIndex = aux.indexOf(letter.c);
-				int letterIndex = letter.pos;
-				//letter.word.word.indexOf(letter.c);
-				
-				// Marcamos a la interseccion como lugar ocupado
-				if (letter.word.direction == Direction.HORIZONTAL) {
-					grid.markOccupied(letter.word.pos.x+letterIndex, letter.word.pos.y);
-				} else {
-					grid.markOccupied(letter.word.pos.x, letter.word.pos.y+letterIndex);
-				}
-				
-				// Attempt to add word
-				try {
+					// Hacemos la matematica para que en la grilla se coloque todo prolijo
+					// y en su lugar
+					int intersectionIndex = aux.indexOf(letter.c);
+					int letterIndex = letter.pos;
+					//letter.word.word.indexOf(letter.c);
+					
+					// Marcamos a la interseccion como lugar ocupado
 					if (letter.word.direction == Direction.HORIZONTAL) {
-						toAdd = addWord(letter.word.pos.x+letterIndex, letter.word.pos.y-intersectionIndex, Direction.VERTICAL, aux);
+						grid.markOccupied(letter.word.pos.x+letterIndex, letter.word.pos.y);
 					} else {
-						toAdd = addWord(letter.word.pos.x-intersectionIndex, letter.word.pos.y+letterIndex, Direction.HORIZONTAL, aux);
+						grid.markOccupied(letter.word.pos.x, letter.word.pos.y+letterIndex);
 					}
 					
-				} catch (AddWordException ex) {
-					// Reseteamos porque la palabra no se pudo agregar
-					if (DEBUG) System.out.println(aux + " was not added. " + ex.getMessage());
+					// Attempt to add word
+					try {
+						if (letter.word.direction == Direction.HORIZONTAL) {
+							toAdd = addWord(letter.word.pos.x+letterIndex, letter.word.pos.y-intersectionIndex, Direction.VERTICAL, aux);
+						} else {
+							toAdd = addWord(letter.word.pos.x-intersectionIndex, letter.word.pos.y+letterIndex, Direction.HORIZONTAL, aux);
+						}
+						
+					} catch (AddWordException ex) {
+						// Reseteamos porque la palabra no se pudo agregar
+						if (DEBUG) System.out.println(aux + " was not added. " + ex.getMessage());
+						
+						// Marcamos el lugar que habiamos marcado como ocupado
+						// como libre porque no agregamos la palabra
+						if (letter.word.direction == Direction.HORIZONTAL) {
+							grid.markAvailable(letter.word.pos.x+letterIndex, letter.word.pos.y);
+						} else {
+							grid.markAvailable(letter.word.pos.x, letter.word.pos.y+letterIndex);
+						}
+						
+						grid.removeCharacter(letter.c);
+						
+						// Seguimos y probamos si la proxima palabra calza en este lugar
+						continue;
+					}
 					
-					// Marcamos el lugar que habiamos marcado como ocupado
-					// como libre porque no agregamos la palabra
+	//				removeCharacter(letter.c);
+					
+					// Sacamos a @{letter} de @{used} para que cuando entre en la recursiva
+					// No se ponga a buscar palabras para calzar en la interseccion
+					used.remove(letter);
+					
+					
+					// Nos fijamos si este es mejor tablero que el anterior mejor
+					// De ser asi actualizamos
+					score = grid.getScore();
+					if (score > maxScore) {
+						maxScore = score;
+						bestGrid = new Grid(grid);
+					}
+					
+					//TODO: Aca cuando implementemos Ant y toda la bola habria que preguntar
+					//     por la opcion --display 
+					// Mostramos el tablero
+					if (DEBUG) {
+						grid.print();
+					} else {
+						if (ANT && params.isVisual())
+							grid.printSimple();
+					}
+					
+					
+					// Agregamos los caracteres que en la recursiva se van a usar para buscar
+					// mas palabras
+					for (int j = 0; j < aux.length(); j++) {
+						Character c = (Character)aux.charAt(j);
+						if (j != intersectionIndex) {
+							if (toAdd.direction == Direction.HORIZONTAL) {
+								used.add(new LetterXY(toAdd, c, j));
+							} else {
+								used.add(new LetterXY(toAdd, c, j));
+							}
+						}
+					}
+					
+					int hc = grid.hashCode();
+					Boolean visited = visitedGrids.get(hc); 
+					
+					if (visited == null || visited == false) {
+					
+						visitedGrids.put(hc, true);
+						
+						// Perform recursive call to same method
+						possibleSolution1(used, score);
+					} else {
+						
+						if (DEBUG) System.out.println("already visited");
+						
+					}
+					
+					
+					
+					/*
+					 * #################
+					 * --- Cleanup Stage
+					 * #################
+					 */
+					
+					
+					// Borramos la palabra que acabamos de agregar al tablero
+					removeWord(toAdd);
+					
+					// Marcamos la interseccion como disponible porque ya que sacamos la palabra
+					// no hay mas interseccion
 					if (letter.word.direction == Direction.HORIZONTAL) {
 						grid.markAvailable(letter.word.pos.x+letterIndex, letter.word.pos.y);
 					} else {
 						grid.markAvailable(letter.word.pos.x, letter.word.pos.y+letterIndex);
 					}
 					
-					grid.removeCharacter(letter.c);
 					
-					// Seguimos y probamos si la proxima palabra calza en este lugar
-					continue;
-				}
-				
-//				removeCharacter(letter.c);
-				
-				// Sacamos a @{letter} de @{used} para que cuando entre en la recursiva
-				// No se ponga a buscar palabras para calzar en la interseccion
-				used.remove(letter);
-				
-				
-				// Nos fijamos si este es mejor tablero que el anterior mejor
-				// De ser asi actualizamos
-				score = grid.getScore();
-				if (score > maxScore) {
-					maxScore = score;
-					bestGrid = new Grid(grid);
-				}
-				
-				//TODO: Aca cuando implementemos Ant y toda la bola habria que preguntar
-				//     por la opcion --display 
-				// Mostramos el tablero
-				if (DEBUG) {
-					grid.print();
-				} else {
-//					grid.printSimple();
-				}
-				
-				
-				// Agregamos los caracteres que en la recursiva se van a usar para buscar
-				// mas palabras
-				for (int j = 0; j < aux.length(); j++) {
-					Character c = (Character)aux.charAt(j);
-					if (j != intersectionIndex) {
-						if (toAdd.direction == Direction.HORIZONTAL) {
-							used.add(new LetterXY(toAdd, c, j));
-						} else {
-							used.add(new LetterXY(toAdd, c, j));
-						}
+					// Restauramos la informacion para que el proximo ciclo haga su trabajo
+					used.clear();
+					for (LetterXY l: backup)
+						used.add(l);
+					
+					if (DEBUG) {
+						System.out.println("After rec call");
+						grid.print();
 					}
 				}
-				
-				int hc = grid.hashCode();
-				Boolean visited = visitedGrids.get(hc); 
-				
-				if (visited == null || visited == false) {
-				
-					visitedGrids.put(hc, true);
-					
-					// Perform recursive call to same method
-					possibleSolution1(used, score);
-				} else {
-					
-					if (DEBUG) System.out.println("already visited");
-					
-				}
-				
-				/*
-				 * #################
-				 * --- Cleanup Stage
-				 * #################
-				 */
-				
-				
-				// Borramos la palabra que acabamos de agregar al tablero
-				removeWord(toAdd);
-				
-				// Marcamos la interseccion como disponible porque ya que sacamos la palabra
-				// no hay mas interseccion
-				if (letter.word.direction == Direction.HORIZONTAL) {
-					grid.markAvailable(letter.word.pos.x+letterIndex, letter.word.pos.y);
-				} else {
-					grid.markAvailable(letter.word.pos.x, letter.word.pos.y+letterIndex);
-				}
-				
-				
-				// Restauramos la informacion para que el proximo ciclo haga su trabajo
-				used.clear();
-				for (LetterXY l: backup)
-					used.add(l);
-				
-				if (DEBUG) {
-					System.out.println("After rec call");
-					grid.print();
-				}
-				
-			}
+			} while (aux != null);
 			
 			// No deberia suceder, pero chequeamos igual por si las moscas
 			if (letter.c != used.get(i).c) {
@@ -252,6 +258,8 @@ public class ExactGame extends Game {
 	@Override
 	public void solve() {
 		maxScore = 0;
+		
+		bestGrid = new Grid(grid.characters);
 		
 		List<String> allWords = grid.getDictionary().getWords();
 		
@@ -300,7 +308,7 @@ public class ExactGame extends Game {
 				}
 				
 				if (DEBUG) System.out.println("Printing initial board");
-				grid.print();
+				if (DEBUG) grid.print();
 				
 				for (int j = 0; j < w.length(); j++) {
 					// Mark characters as used
@@ -316,9 +324,9 @@ public class ExactGame extends Game {
 			
 		}
 		
+//		if (DEBUG) System.out.println("Max Score is: " + maxScore);
 		System.out.println("Max Score is: " + maxScore);
-		
-		bestGrid.print();
+		bestGrid.printSimple();
 	}
 
 }

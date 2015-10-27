@@ -18,7 +18,7 @@ public abstract class Game {
 		private String lettersFileName;
 		private String outputFileName;
 		private boolean visual = false;
-		private float maxTime = 0;
+		private double maxTime = 0;
 
 		/**
 		 * @param dictionaryFileName the dictionaryFileName to set
@@ -51,7 +51,7 @@ public abstract class Game {
 		/**
 		 * @param maxTime the maxTime to set
 		 */
-		public void setMaxTime(float maxTime) {
+		public void setMaxTime(double maxTime) {
 			this.maxTime = maxTime;
 		}
 
@@ -65,7 +65,7 @@ public abstract class Game {
 		/**
 		 * @return the maxTime
 		 */
-		public float getMaxTime() {
+		public double getMaxTime() {
 			return maxTime;
 		}
 		
@@ -203,6 +203,8 @@ public abstract class Game {
 	
 	protected GameParameters params;
 	
+	protected double eta = System.nanoTime()+10*Math.pow(10, 9);
+	
 	public enum Direction {
 		HORIZONTAL,
 		VERTICAL
@@ -219,6 +221,9 @@ public abstract class Game {
 					params.dictionaryFileName,
 					InputData.DictionaryFillStrategy.HIGHEST_VALUE,
 					map);
+			if (params.getMaxTime() > 0) {
+				this.eta = System.nanoTime()+params.getMaxTime()*Math.pow(10, 9);
+			}
 		} else {
 			map = InputData.getGameChars(LETTERS_FILENAME);
 			dictionary = InputData.fillDictionary(
@@ -229,7 +234,7 @@ public abstract class Game {
 		grid = new Board(map);
 		grid.setDictionary(dictionary);
 		long end = System.nanoTime() - start; 
-		System.out.println("Load Time: " + end/1000000.0 + "ms");
+		if (DEBUG) System.out.println("Load Time: " + end/1000000.0 + "ms");
 	}
 	
 	public static List<Character> getAvailableChars(Map<Character, Integer> characters) {
