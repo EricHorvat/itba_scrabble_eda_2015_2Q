@@ -65,16 +65,16 @@ public class ExactGame extends Game {
 //			while (true) {
 				
 				// Show available chars
-//				if (DEBUG) {
+				if (DEBUG) {
 					List<Character> lj = getAvailableChars(grid.characters);
 					System.out.println("("+lj.size()+"/"+numberOfLetters+"/"+(numberOfLetters-lj.size())+"): "+lj + " " + grid.characters);
-//				}
+				}
 				
 				// Character in the intersection should be added to available chars
 				// since it isnt available but next word will contain this letter
 //				grid.addCharacter(letter.c);
 				
-				if (DEBUG) System.out.println("Adding " + letter.c + " for search");
+//				if (DEBUG) System.out.println("Adding " + letter.c + " for search");
 				
 				// SELECT word FROM dictionary WHERE
 				//     word.toCharArray().isContainedIn(@{characters})
@@ -96,13 +96,15 @@ public class ExactGame extends Game {
 					else
 						System.out.println("/SEARCH/"+letter.word.word+"/"+ letter.c + "/"+aux+"("+letterIndex2.x+","+(letterIndex2.y+letter.pos)+")");
 				}
-				if (DEBUG) System.out.println("Removing " + letter.c + ". Already searched");
+//				if (DEBUG) System.out.println("Removing " + letter.c + ". Already searched");
 				
 				// Since we added letter.c we should remove it
 //				grid.removeCharacter(letter.c);
 				
 				// Si aux == null ==> con este caracter no hay mas palabras para buscar
-				if (aux != null) {
+				if (aux == null) {
+					
+				} else {
 					
 					// No hay mas palabras con esta letra (letter.c)
 					// ==> pasamos a la proxima
@@ -143,10 +145,19 @@ public class ExactGame extends Game {
 							grid.markAvailable(letter.word.pos.x, letter.word.pos.y+letterIndex);
 						}
 						
-						grid.removeCharacter(letter.c);
+//						grid.removeCharacter(letter.c);
 						
 						// Seguimos y probamos si la proxima palabra calza en este lugar
 						continue;
+					}
+					
+					// La palabra se agrego
+					
+//					grid.addCharacter(letter.c);
+					
+					for (int k = 0; k < aux.length(); k++) {
+						if (k != intersectionIndex)
+							grid.removeCharacter((Character)aux.charAt(k));
 					}
 					
 	//				removeCharacter(letter.c);
@@ -234,6 +245,7 @@ public class ExactGame extends Game {
 						grid.print();
 					}
 				}
+				
 			} while (aux != null);
 			
 			// No deberia suceder, pero chequeamos igual por si las moscas
@@ -281,7 +293,7 @@ public class ExactGame extends Game {
 			int y = grid.size()/2;
 			
 			// Probamos todas las posiciones posibles en el eje x
-			for (int i = x; i <= grid.size()/2+1; i++) {
+			for (int i = x; i <= grid.size()/2; i++) {
 				
 				cleanBoard();
 				
@@ -307,7 +319,10 @@ public class ExactGame extends Game {
 					tmp = addWord(i, y, Direction.HORIZONTAL, w);
 				} catch (AddWordException e1) {
 					// No llega nunca el tablero esta siempre vacio
-//					System.out.println(e1.getMessage());
+					grid.print();
+					System.out.println(grid.getIntersections());
+					System.out.println(e1.getMessage());
+					return;
 				}
 				
 				if (DEBUG) System.out.println("Printing initial board");
@@ -329,12 +344,12 @@ public class ExactGame extends Game {
 		
 //		if (DEBUG) System.out.println("Max Score is: " + maxScore);
 		System.out.println("Max Score is: " + maxScore);
-//		bestGrid.printSimple();
-		try {
-			bestGrid.printSimpleDump(params.outputFileName);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		bestGrid.printSimple();
+//		try {
+//			bestGrid.printSimpleDump(params.outputFileName);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 }

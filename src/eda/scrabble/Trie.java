@@ -235,7 +235,7 @@ public class Trie {
 					resultWord = c.toString().concat(resultWord);
 					if (	searchedChar != null
 							&& searchedPosition == currentIndex
-							&& resultWord.charAt(currentIndex) != searchedChar )
+							&& resultWord.charAt(0) != searchedChar )
 					{
 						resultWord = null;
 						node = trie.bestNode(manipulableChars, node.next);
