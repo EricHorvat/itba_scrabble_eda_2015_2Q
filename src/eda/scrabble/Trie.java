@@ -103,10 +103,19 @@ public class Trie {
 		first.add(word, null);
 	}
 	public void addEndLetter() {
-		Node node = new Node(this);
-		node.value = 0;
-		node.next = first;
-		first = node;
+		Node node = first;
+		Node prevNode = null;
+		while (node != null) {
+			prevNode = node;
+			node = node.next;
+		}
+		Node endNode = new Node(this);
+		endNode.value = 0;
+		endNode.next = null;
+		if (prevNode == null)
+			first = endNode;
+		else
+			prevNode.next = endNode;
 	}
 
 	private Node containingCharacter(Node node, char c) {
@@ -229,6 +238,7 @@ public class Trie {
 				prevWord = null;
 			} else {
 				// Busca en mis descendientes el que se corresponda con prevWord
+				manipulableChars.put(c, manipulableChars.get(c) - 1);
 				resultWord = bestOption(manipulableChars, currentIndex+1, maxLength, searchedChar, searchedPosition, prevWord.substring(1, prevWord.length()), node.nextLetter);
 				if (resultWord != null) {
 					// Armamos la palabra resultante
@@ -238,10 +248,12 @@ public class Trie {
 							&& resultWord.charAt(0) != searchedChar )
 					{
 						resultWord = null;
+						manipulableChars.put(c, manipulableChars.get(c) + 1);
 						node = trie.bestNode(manipulableChars, node.next);
 					}
 				}
 				else {
+					manipulableChars.put(c, manipulableChars.get(c) + 1);
 					node = trie.bestNode(manipulableChars, node.next);
 				}
 			}
@@ -258,7 +270,7 @@ public class Trie {
 			return "";
 		
 		//(Eric v8)Agrega al caracter de fin a las posibilidades
-		if (currentIndex == 2)	manipulableChars.put(END_CHAR, manipulableChars.get(END_CHAR)+1);
+		if (currentIndex == 2)	manipulableChars.put(END_CHAR, 1);
 		
 		Character currentChar = null;
 		
@@ -293,7 +305,7 @@ public class Trie {
 			Node node){
 		
 		Character currentChar = node.value;
-		manipulableChars.put(currentChar, manipulableChars.get(currentChar)-1);
+		manipulableChars.put(currentChar, manipulableChars.get(currentChar) - 1);
 		// baja un nivel. Busca la mejor subopcion
 		String resultWord = bestOption(manipulableChars, currentIndex+1, maxLength, searchedChar, searchedPosition, null,  node.nextLetter);
 		

@@ -190,7 +190,7 @@ public abstract class Game {
 	
 	protected final static int MAX_LENGTH_WORD = 7;
 	
-	protected final static boolean DEBUG = true;
+	protected final static boolean DEBUG = false;
 	protected final static boolean ANT = false;
 	
 	public final static Map<Character,Integer> VALUE_MAP = InputData.fillValueMap(CHAR_VALUE_FILENAME);
@@ -203,7 +203,7 @@ public abstract class Game {
 	
 	protected GameParameters params;
 	
-	protected double eta = System.nanoTime()+20*Math.pow(10, 9);
+	protected double eta = System.nanoTime()+20*10E9;
 	
 	public enum Direction {
 		HORIZONTAL,
@@ -222,13 +222,13 @@ public abstract class Game {
 					InputData.DictionaryFillStrategy.HIGHEST_VALUE,
 					map);
 			if (params.getMaxTime() > 0) {
-				this.eta = System.nanoTime()+params.getMaxTime()*Math.pow(10, 9);
+				this.eta = System.nanoTime()+params.getMaxTime()*10E9;
 			}
 		} else {
 			map = InputData.getGameChars(LETTERS_FILENAME);
 			dictionary = InputData.fillDictionary(
 					DICTIONARY_FILENAME,
-					InputData.DictionaryFillStrategy.HIGHEST_VALUE,
+					InputData.DictionaryFillStrategy.HIGHEST_OCURRENCY,
 					map);
 		}
 		grid = new Board(map);
@@ -313,15 +313,15 @@ public abstract class Game {
 		switch (d) {
 			case HORIZONTAL:
 				if (grid.get(x-1, y) != Grid.EMPTY_SPACE) {
-					for (int j = x; j < x+word.length(); j++) {
+//					for (int j = x; j < x+word.length(); j++) {
 //							grid.addCharacter((Character)word.charAt(j-x));
-					}
+//					}
 					throw new AddWordException("Horizontal failed left");
 				}
 				if (grid.get(x+word.length(), y) != Grid.EMPTY_SPACE) {
-					for (int j = x; j < x+word.length(); j++) {
+//					for (int j = x; j < x+word.length(); j++) {
 //							grid.addCharacter((Character)word.charAt(j-x));
-					}
+//					}
 					throw new AddWordException("horizontal failed right");
 				}
 				
@@ -350,8 +350,8 @@ public abstract class Game {
 					}
 					if (!needsRemoval && grid.get(i, y-1) != Grid.EMPTY_SPACE && !occupied) {
 						// Armamos el string que se acaba de formar
-						String s = ""+word.charAt(i-x);
-						int j = 1;
+						String s = "";//+word.charAt(i-x);
+						int j = 0;
 						while (grid.get(i, y-j) != Grid.EMPTY_SPACE) {
 							s += grid.get(i, y-j);
 							j++;
@@ -364,7 +364,7 @@ public abstract class Game {
 						}
 					}
 					// Chequeamos que no estemos pisando nada
-					if (!needsRemoval && grid.get(i, y) != Grid.EMPTY_SPACE && !occupied) {
+					if (!needsRemoval && word.charAt(i-x) != Grid.EMPTY_SPACE && grid.get(i, y) != Grid.EMPTY_SPACE) {
 						
 						// Marcamos para eliminar
 						needsRemoval = true;
@@ -372,23 +372,26 @@ public abstract class Game {
 					
 					if (needsRemoval) {
 						if (DEBUG) System.out.print("Returning: ");
-						for (int j = x; j < x+word.length(); j++) {
-							boolean isIntersection = grid.isOccupied(j, y);
-							if (j <= i - 1 && !isIntersection) {
-								
-								// Borramos el caracter que habia
+						for (int j = x; j < i; j++){
+							if (!grid.isOccupied(j, y)) {
 								grid.set(j, y, Grid.EMPTY_SPACE);
 							}
-							if (DEBUG) System.out.print(word.charAt(j-x) + " ");
-//							grid.addCharacter((Character)word.charAt(j-x));
 						}
-						if (DEBUG) System.out.println();
-						
+//						for (int j = x; j < x+word.length(); j++) {
+//							boolean isIntersection = grid.isOccupied(j, y);
+//							if (j <= i - 1 && !isIntersection) {
+								
+								// Borramos el caracter que habia
+//								grid.set(j, y, Grid.EMPTY_SPACE);
+//							}
+//							if (DEBUG) System.out.print(word.charAt(j-x) + " ");
+//							grid.addCharacter((Character)word.charAt(j-x));
 						throw new AddWordException("Failed to insert horizontally");
+//						if (DEBUG) System.out.println();
 						
 					}
-					
-					grid.set(i, y, word.charAt(i-x));
+					if (word.charAt(i-x) != Grid.EMPTY_SPACE)
+						grid.set(i, y, word.charAt(i-x));
 				}
 				break;
 				
@@ -398,15 +401,15 @@ public abstract class Game {
 			 */
 			case VERTICAL:
 				if (grid.get(x, y-1) != Grid.EMPTY_SPACE) {
-					for (int j = y; j < y+word.length(); j++) {
+//					for (int j = y; j < y+word.length(); j++) {
 //							grid.addCharacter((Character)word.charAt(j-y));
-					}
+//					}
 					throw new AddWordException("vertical failed top found "+grid.get(x, y-1));
 				}
 				if (grid.get(x,word.length()+y) != Grid.EMPTY_SPACE) {
-					for (int j = y; j < y+word.length(); j++) {
+//					for (int j = y; j < y+word.length(); j++) {
 //							grid.addCharacter((Character)word.charAt(j-y));
-					}
+//					}
 					throw new AddWordException("vertical failed bottom found "+grid.get(x, word.length()+y));
 				}
 				for (int i = y; i < y+word.length(); i++) {
@@ -427,7 +430,7 @@ public abstract class Game {
 							
 						}
 					}
-					if (grid.get(x-1, i) != Grid.EMPTY_SPACE && !isOccupied) {
+					if (!needsRemoval && grid.get(x-1, i) != Grid.EMPTY_SPACE && !isOccupied) {
 						// Armamos el string a eliminar
 						String s = "";//+word.charAt(i-y);
 						int j = 0;
@@ -445,31 +448,36 @@ public abstract class Game {
 							
 						}
 					}
-					if (grid.get(x, i) != Grid.EMPTY_SPACE && !isOccupied) {
+					if (!needsRemoval && word.charAt(i-y) != Grid.EMPTY_SPACE && grid.get(x, i) != Grid.EMPTY_SPACE) {
 						
 						needsRemoval = true;
 					}
 					
 					if (needsRemoval) {
 						if (DEBUG) System.out.print("Returning: ");
-						for (int j = y; j < y+word.length(); j++) {
-							boolean isIntersection = grid.isOccupied(x, j);// used.get(new Coordinate(x, j));
-							if (j <= i - 1 && !isIntersection) {
-//								if (DEBUG) System.out.println("Attempting to remove " + word.charAt(j-y));
-								if (isIntersection) continue;
-								
-								// Borramos el caracter que habia
+						for (int j = y; j < i; j++) {
+							if (!grid.isOccupied(x, j)) {
 								grid.set(x, j, Grid.EMPTY_SPACE);
 							}
-							if (DEBUG) System.out.print(word.charAt(j-y) + " ");
-//							grid.addCharacter((Character)word.charAt(j-y));
 						}
-						if (DEBUG) System.out.println();
+//						for (int j = y; j < y+word.length(); j++) {
+//							boolean isIntersection = grid.isOccupied(x, j);// used.get(new Coordinate(x, j));
+//							if (j <= i - 1 && !isIntersection) {
+//								if (DEBUG) System.out.println("Attempting to remove " + word.charAt(j-y));
+//								if (isIntersection) continue;
+								
+								// Borramos el caracter que habia
+//								grid.set(x, j, Grid.EMPTY_SPACE);
+//							}
+//							if (DEBUG) System.out.print(word.charAt(j-y) + " ");
+//							grid.addCharacter((Character)word.charAt(j-y));
+//						}
+//						if (DEBUG) System.out.println();
 						
 						throw new AddWordException("Failed to insert vertically");
 					}
-					
-					grid.set(x, i, word.charAt(i-y));
+					if (word.charAt(i-y) != Grid.EMPTY_SPACE)
+						grid.set(x, i, word.charAt(i-y));
 				} 
 				break;
 		}

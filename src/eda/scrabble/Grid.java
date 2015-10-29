@@ -123,13 +123,7 @@ public class Grid {
 	public void printSimple() {
 		for (int i = 0; i < GRID_SIZE; i++) {
 			for (int j = 0; j < GRID_SIZE; j++) {
-				if (DEBUG)
-//					if (COLORIZE && Game.getInstance().isOccupied(j, i))
-//						System.out.print(ANSI_WHITE + grid[i][j]+ ANSI_RESET);
-//					else
-						System.out.print(grid[i][j]);
-				else
-					System.out.print(grid[i][j]);
+				System.out.print(grid[i][j]);
 			}
 			System.out.println();
 		}
@@ -247,6 +241,15 @@ public class Grid {
 		return intersections;
 	}
 	
-	
+	public int getUsed() {
+		int r = 0;
+		for (int i = 0; i < GRID_SIZE; i++) {
+			for (int j = 0; j < GRID_SIZE; j++) {
+				if (grid[i][j] != EMPTY_SPACE)
+					r++;
+			}
+		}
+		return r;
+	}
 	
 }
