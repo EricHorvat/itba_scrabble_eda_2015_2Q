@@ -82,26 +82,18 @@ public abstract class Game {
 		
 		@Override
 		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + x;
-			result = prime * result + y;
+			int result = (int) (Math.pow(2, x) * Math.pow(3, y));
 			return result;
 		}
 
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
 			Coordinate other = (Coordinate) obj;
-			if (x != other.x)
-				return false;
-			if (y != other.y)
-				return false;
+			if (x != other.x) return false;
+			if (y != other.y) return false;
 			return true;
 		}
 		
@@ -138,6 +130,11 @@ public abstract class Game {
 		@Override
 		public String toString() {
 			return word.toString()+" " + c + "["+pos+"]";
+		}
+		
+		@Override
+		public int hashCode() {
+			return word.hashCode()+c.hashCode()+pos;
 		}
 	}
 	
@@ -180,6 +177,30 @@ public abstract class Game {
 			if (this.direction != other.direction) return false;
 			return true;
 			
+		}
+		
+		@Override
+		public int hashCode() {
+			
+			return pos.hashCode()+word.hashCode()*(direction == Direction.HORIZONTAL ? 1 : -1);
+		}
+		
+	}
+	
+	protected static class AddWordResult {
+		public WordXY word;
+		public boolean success;
+		
+		public String msg;
+		
+		public AddWordResult(String msg) {
+			this.success = false;
+			this.msg = msg;
+		}
+		
+		public AddWordResult(WordXY w) {
+			this.success = true;
+			this.word = w;
 		}
 		
 	}
@@ -228,7 +249,7 @@ public abstract class Game {
 			map = InputData.getGameChars(LETTERS_FILENAME);
 			dictionary = InputData.fillDictionary(
 					DICTIONARY_FILENAME,
-					InputData.DictionaryFillStrategy.HIGHEST_OCURRENCY,
+					InputData.DictionaryFillStrategy.HIGHEST_VALUE,
 					map);
 		}
 		grid = new Board(map);
@@ -261,11 +282,11 @@ public abstract class Game {
 		return l;
 	}
 	
-	protected WordXY addWord(int x, int y, Direction d, String word) throws AddWordException {
+	protected AddWordResult addWord(int x, int y, Direction d, String word) {
 		return addWord(x, y, d, word, grid, null, grid.getDictionary());
 	}
 	
-	protected WordXY addWord(int x, int y, Direction d, String word, Board grid) throws AddWordException {
+	protected AddWordResult addWord(int x, int y, Direction d, String word, Board grid) {
 		return addWord(x, y, d, word, grid, null, grid.getDictionary());
 	}
 	
@@ -279,7 +300,7 @@ public abstract class Game {
 	 * @throws IllegalArgumentException
 	 */
 	
-	protected WordXY addWord(int x, int y, Direction d, String word, Grid grid, Deque<WordXY> words, Dictionary dictionary) throws AddWordException {
+	protected AddWordResult addWord(int x, int y, Direction d, String word, Grid grid, Deque<WordXY> words, Dictionary dictionary) {
 		
 		boolean withinBounds = true;
 		
@@ -303,7 +324,7 @@ public abstract class Game {
 			for (int j = 0; j < word.length(); j++) {
 //				grid.addCharacter((Character)word.charAt(j));
 			}
-			throw new AddWordException("Words is out of board");
+			return new AddWordResult("Words is out of board");
 		}
 		
 		if (DEBUG) System.out.println("inserting "+word+" at x:"+x+" y:"+y+" "+d);
@@ -316,13 +337,14 @@ public abstract class Game {
 //					for (int j = x; j < x+word.length(); j++) {
 //							grid.addCharacter((Character)word.charAt(j-x));
 //					}
-					throw new AddWordException("Horizontal failed left");
+					
+					return new AddWordResult("Horizontal failed left");
 				}
 				if (grid.get(x+word.length(), y) != Grid.EMPTY_SPACE) {
 //					for (int j = x; j < x+word.length(); j++) {
 //							grid.addCharacter((Character)word.charAt(j-x));
 //					}
-					throw new AddWordException("horizontal failed right");
+					return new AddWordResult("horizontal failed right");
 				}
 				
 				for (int i = x; i < x+word.length(); i++) {
@@ -386,7 +408,7 @@ public abstract class Game {
 //							}
 //							if (DEBUG) System.out.print(word.charAt(j-x) + " ");
 //							grid.addCharacter((Character)word.charAt(j-x));
-						throw new AddWordException("Failed to insert horizontally");
+						return new AddWordResult("Failed to insert horizontally");
 //						if (DEBUG) System.out.println();
 						
 					}
@@ -404,13 +426,13 @@ public abstract class Game {
 //					for (int j = y; j < y+word.length(); j++) {
 //							grid.addCharacter((Character)word.charAt(j-y));
 //					}
-					throw new AddWordException("vertical failed top found "+grid.get(x, y-1));
+					return new AddWordResult("vertical failed top found "+grid.get(x, y-1));
 				}
 				if (grid.get(x,word.length()+y) != Grid.EMPTY_SPACE) {
 //					for (int j = y; j < y+word.length(); j++) {
 //							grid.addCharacter((Character)word.charAt(j-y));
 //					}
-					throw new AddWordException("vertical failed bottom found "+grid.get(x, word.length()+y));
+					return new AddWordResult("vertical failed bottom found "+grid.get(x, word.length()+y));
 				}
 				for (int i = y; i < y+word.length(); i++) {
 					boolean isOccupied = grid.isOccupied(x, i);
@@ -474,7 +496,7 @@ public abstract class Game {
 //						}
 //						if (DEBUG) System.out.println();
 						
-						throw new AddWordException("Failed to insert vertically");
+						return new AddWordResult("Failed to insert vertically");
 					}
 					if (word.charAt(i-y) != Grid.EMPTY_SPACE)
 						grid.set(x, i, word.charAt(i-y));
@@ -490,7 +512,7 @@ public abstract class Game {
 			this.words.add(wordXY);
 		}
 		
-		return wordXY;
+		return new AddWordResult(wordXY);
 		
 	}
 	

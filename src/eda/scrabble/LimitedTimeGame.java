@@ -157,14 +157,15 @@ public class LimitedTimeGame extends Game {
 						board.markIntersection(letter.word.pos.x, letter.word.pos.y+letter.pos);
 					}
 					
-					try {
-						if (letter.word.direction == Direction.HORIZONTAL) {
-							toAdd = addWord(letter.word.pos.x+letter.pos, letter.word.pos.y-intersectionIndex, Direction.VERTICAL, aux, board, board.getWords(), board.getDictionary());
-						} else {
-							toAdd = addWord(letter.word.pos.x-intersectionIndex, letter.word.pos.y+letter.pos, Direction.HORIZONTAL, aux, board, board.getWords(), board.getDictionary());
-						}
-					} catch (AddWordException ex) {
-						
+					AddWordResult result;
+					
+					if (letter.word.direction == Direction.HORIZONTAL) {
+						result = addWord(letter.word.pos.x+letter.pos, letter.word.pos.y-intersectionIndex, Direction.VERTICAL, aux, board, board.getWords(), board.getDictionary());
+					} else {
+						result = addWord(letter.word.pos.x-intersectionIndex, letter.word.pos.y+letter.pos, Direction.HORIZONTAL, aux, board, board.getWords(), board.getDictionary());
+					}
+					
+					if (!result.success) {
 						board.removeCharacter(letter.c);
 						
 						if (letter.word.direction == Direction.HORIZONTAL) {
@@ -174,24 +175,30 @@ public class LimitedTimeGame extends Game {
 						}
 						
 						continue;
-					}
-					
-					int score = board.getScore();
-					
-					if (score > maxScore) {
-						maxScore = score;
-						bestBoard = new Board(board);
-						wordToAdd = toAdd;
-						bestLetter = letter;
-					}
-					
-					removeWord(board.getWords(), board);
-					
-					if (letter.word.direction == Direction.HORIZONTAL) {
-						board.clearIntersection(letter.word.pos.x+letter.pos, letter.word.pos.y);
 					} else {
-						board.clearIntersection(letter.word.pos.x, letter.word.pos.y+letter.pos);
+						
+						toAdd = result.word;
+						
+						int score = board.getScore();
+						
+						if (score > maxScore) {
+							maxScore = score;
+							bestBoard = new Board(board);
+							wordToAdd = toAdd;
+							bestLetter = letter;
+						}
+						
+						removeWord(board.getWords(), board);
+						
+						if (letter.word.direction == Direction.HORIZONTAL) {
+							board.clearIntersection(letter.word.pos.x+letter.pos, letter.word.pos.y);
+						} else {
+							board.clearIntersection(letter.word.pos.x, letter.word.pos.y+letter.pos);
+						}
 					}
+					
+					
+					
 				}
 				
 			} while (aux != null);
@@ -277,13 +284,15 @@ public class LimitedTimeGame extends Game {
 							board.markIntersection(letter.word.pos.x, letter.word.pos.y+letter.pos);
 						}
 						
-						try {
-							if (letter.word.direction == Direction.HORIZONTAL) {
-								toAdd = addWord(letter.word.pos.x+letter.pos, letter.word.pos.y-intersectionIndex, Direction.VERTICAL, aux, board, board.getWords(), board.getDictionary());
-							} else {
-								toAdd = addWord(letter.word.pos.x-intersectionIndex, letter.word.pos.y+letter.pos, Direction.HORIZONTAL, aux, board, board.getWords(), board.getDictionary());
-							}
-						} catch (AddWordException ex) {
+						AddWordResult result;
+						
+						if (letter.word.direction == Direction.HORIZONTAL) {
+							result = addWord(letter.word.pos.x+letter.pos, letter.word.pos.y-intersectionIndex, Direction.VERTICAL, aux, board, board.getWords(), board.getDictionary());
+						} else {
+							result = addWord(letter.word.pos.x-intersectionIndex, letter.word.pos.y+letter.pos, Direction.HORIZONTAL, aux, board, board.getWords(), board.getDictionary());
+						}
+						
+						if (!result.success) {
 							
 							board.removeCharacter(letter.c);
 							
@@ -294,32 +303,37 @@ public class LimitedTimeGame extends Game {
 							}
 							
 							continue;
-						}
-						
-						int score = board.getScore();
-						
-						double p = 1 / ( 1 + Math.pow(Math.E, (initScore - score) / T ) );
-						
-						double rnd = Math.random();
-						if ( p > rnd) {
 							
-							bestBoard = new Board(board);
-							wordToAdd = toAdd;
-							bestLetter = letter;
-							
-							found = true;
-							
-							break;
-							
-						}
-						
-						removeWord(board.getWords(), board);
-						
-						if (letter.word.direction == Direction.HORIZONTAL) {
-							board.clearIntersection(letter.word.pos.x+letter.pos, letter.word.pos.y);
 						} else {
-							board.clearIntersection(letter.word.pos.x, letter.word.pos.y+letter.pos);
+							
+							toAdd = result.word;
+							
+							int score = board.getScore();
+							
+							double p = 1 / ( 1 + Math.pow(Math.E, (initScore - score) / T ) );
+							
+							double rnd = Math.random();
+							if ( p > rnd) {
+								
+								bestBoard = new Board(board);
+								wordToAdd = toAdd;
+								bestLetter = letter;
+								
+								found = true;
+								
+								break;
+								
+							}
+							
+							removeWord(board.getWords(), board);
+							
+							if (letter.word.direction == Direction.HORIZONTAL) {
+								board.clearIntersection(letter.word.pos.x+letter.pos, letter.word.pos.y);
+							} else {
+								board.clearIntersection(letter.word.pos.x, letter.word.pos.y+letter.pos);
+							}
 						}
+						
 					}
 				} while (aux != null);
 				
@@ -363,15 +377,19 @@ public class LimitedTimeGame extends Game {
 					String emergency = dictionaryWords.get( ((int)(Math.random() * 1000)) % dictionaryWords.size() );
 					if (DEBUG) System.out.println("remain chars ("+getAvailableChars(board.characters).size()+")"+ getAvailableChars(board.characters));
 					WordXY w = null;
-					try {
-						w = addWord((board.size()-emergency.length())/2, grid.size()/2, Direction.HORIZONTAL, emergency, board, board.getWords(), board.getDictionary());
-					} catch (AddWordException err) {
-						if (DEBUG) System.out.println(err.getMessage());
-					}
-					letters.clear();
-					for (int j = 0; j < w.word.length(); j++) {
-						board.removeCharacter((Character)w.word.charAt(j));
-						letters.add(new LetterXY(w, (Character)w.word.charAt(j), j));
+					AddWordResult result = addWord((board.size()-emergency.length())/2, grid.size()/2, Direction.HORIZONTAL, emergency, board, board.getWords(), board.getDictionary());
+					
+					if (!result.success) {
+						if (DEBUG) System.out.println(result.msg);
+					} else {
+					
+						w = result.word;
+						
+						letters.clear();
+						for (int j = 0; j < w.word.length(); j++) {
+							board.removeCharacter((Character)w.word.charAt(j));
+							letters.add(new LetterXY(w, (Character)w.word.charAt(j), j));
+						}
 					}
 				}
 //				hillClimbStochastic(board, letters);
@@ -465,13 +483,15 @@ public class LimitedTimeGame extends Game {
 				board.markIntersection(word.pos.x, word.pos.y+i);
 			}
 			
-			try {
-				if (word.direction == Direction.HORIZONTAL) {
-					toAdd = addWord(word.pos.x+i, word.pos.y-intersectionIndex, Direction.VERTICAL, aux, board, board.getWords(), board.getDictionary());
-				} else {
-					toAdd = addWord(word.pos.x-intersectionIndex, word.pos.y+i, Direction.HORIZONTAL, aux, board, board.getWords(), board.getDictionary());
-				}
-			} catch (AddWordException ex) {
+			AddWordResult result;
+			
+			if (word.direction == Direction.HORIZONTAL) {
+				result = addWord(word.pos.x+i, word.pos.y-intersectionIndex, Direction.VERTICAL, aux, board, board.getWords(), board.getDictionary());
+			} else {
+				result = addWord(word.pos.x-intersectionIndex, word.pos.y+i, Direction.HORIZONTAL, aux, board, board.getWords(), board.getDictionary());
+			}
+			
+			if (!result.success) {
 				
 				board.removeCharacter(intersectionChar);
 				
@@ -482,17 +502,20 @@ public class LimitedTimeGame extends Game {
 				}
 				
 				continue;
+				
+			} else {
+				
+				toAdd = result.word;
+				
+				int score = board.getScore();
+				if (score > maxScore)
+					maxScore = score;
+				
+				firstDepth(board);
+				
+				// Cortamos no me importa seguir mas
+				return;
 			}
-			
-			int score = board.getScore();
-			if (score > maxScore)
-				maxScore = score;
-			
-			firstDepth(board);
-			
-			// Cortamos no me importa seguir mas
-			return;
-			
 		}
 		
 //		board.print();
@@ -524,14 +547,16 @@ public class LimitedTimeGame extends Game {
 			
 			WordXY word = null;
 			
-			try {
-				word = addWord(x, y, Direction.HORIZONTAL, firstWord, board, board.getWords(), board.getDictionary());
-			} catch (AddWordException e) {
+			AddWordResult result = addWord(x, y, Direction.HORIZONTAL, firstWord, board, board.getWords(), board.getDictionary()); 
+			
+			if (!result.success) {
+				
+			} else {
+				firstDepth(board);
+				
+				i++;
 			}
 			
-			firstDepth(board);
-			
-			i++;
 		}
 		
 		Collections.sort(this.boards, new Comparator<Board>() {

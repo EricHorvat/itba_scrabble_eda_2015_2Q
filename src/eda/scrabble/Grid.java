@@ -6,8 +6,10 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import eda.scrabble.Game.Coordinate;
 
@@ -32,8 +34,30 @@ public class Grid {
 	
 	private char[][] grid = new char[GRID_SIZE][GRID_SIZE];
 	
+	private static int[][] zorbistTable = new int[GRID_SIZE*GRID_SIZE][27];
+	
+	private static boolean HASH_INITIALIZED = false;
+	
 	protected Map<Coordinate, Boolean> intersections;
 	protected Map<Character, Integer> characters;
+	
+	private static void __init_zorbist() {
+		
+		if (!HASH_INITIALIZED) {
+			
+			HASH_INITIALIZED = true;
+			
+			Random random = new Random();
+			
+			for (int i = 0; i < GRID_SIZE*GRID_SIZE; i++) {
+				for (int j = 0; j < 27; j++) {
+					zorbistTable[i][j] = random.nextInt();
+				}
+			}
+			
+		}
+		
+	}
 	
 	public Grid(Map<Character, Integer> characters) {
 
@@ -45,6 +69,8 @@ public class Grid {
 				grid[i][j] = EMPTY_SPACE;
 			}
 		}
+		
+		__init_zorbist();
 	}
 	
 	public Grid(Grid grid) {
@@ -56,6 +82,8 @@ public class Grid {
 				this.grid[i][j] = grid.get(j, i);
 			}
 		}
+		
+		__init_zorbist();
 	}
 	
 	public int getScore() {
@@ -80,6 +108,7 @@ public class Grid {
 	
 	public void print() {
 		int n = 0;
+		int score = 0;
 		System.out.print(" +");
 		for (int i = 0; i < GRID_SIZE; i++) {
 			int h = i %10; 
@@ -92,10 +121,12 @@ public class Grid {
 		System.out.println('+');
 		for (int i = 0; i < GRID_SIZE; i++) {
 			int h = i%10;
-			System.out.print(String.valueOf(h)+'|');;
+			System.out.print(String.valueOf(h)+'|');
 			for (int j = 0; j < GRID_SIZE; j++) {
-				if (grid[i][j] != EMPTY_SPACE)
+				if (grid[i][j] != EMPTY_SPACE) {
 					n++;
+					score += Game.VALUE_MAP.get(grid[i][j]);
+				}
 				if (DEBUG)
 //					if (COLORIZE && Game.getInstance().isOccupied(j, i))
 //						System.out.print(ANSI_WHITE + grid[i][j]+ ANSI_RESET +  "|");
@@ -117,7 +148,7 @@ public class Grid {
 			System.out.print(h+"|");
 		}
 		System.out.println('+');
-		System.out.println("used characters: " + n);
+		System.out.println("used characters: " + n + "/" + score);
 	}
 	
 	public void printSimple() {
@@ -220,18 +251,72 @@ public class Grid {
 		return GRID_SIZE;
 	}
 	
+	int[] primes = {2,3,5,7,11,13,17,23,29,31,37};
+	
 	@Override
 	public int hashCode() {
 		
-		StringBuffer sb = new StringBuffer(GRID_SIZE*GRID_SIZE);
+//		StringBuffer sb = new StringBuffer(GRID_SIZE*GRID_SIZE);
 
+//		int seed = 0;
+		
+//		int hash = 0;
+		
+//		for (int i = 0; i < GRID_SIZE; i++) {
+//			for (int j = 1; j < GRID_SIZE; j++) {
+//				if (grid[i][j] != Grid.EMPTY_SPACE)
+//					hash = 28 * hash + ( (int)grid[i][j] - 64 );
+//				else
+//					hash = 28 * hash;
+//				if (grid[i][j] != Grid.EMPTY_SPACE)
+//					sb.append((int)grid[i][j] - 64);
+//				else
+//					sb.append((int)0);
+//				seed ^= (int)grid[i][j] - 65 + 0x9e3779b9 + (seed << 6) + (seed << 2);
+//			}
+//		}
+		
+		int h = 0;
+		
 		for (int i = 0; i < GRID_SIZE; i++) {
 			for (int j = 0; j < GRID_SIZE; j++) {
-				sb.append(grid[i][j]);
+				if (grid[i][j] != Grid.EMPTY_SPACE) {
+					int k = (int)grid[i][j] - 65;
+					h = h ^ zorbistTable[i*GRID_SIZE+j][k];
+				}
 			}
 		}
 		
-		return sb.toString().hashCode();
+		return h;
+
+//	int h = 0;
+		
+//	for (int i = 0; i < GRID_SIZE; i++) {
+//		for (int j = 0; j < GRID_SIZE; j++) {
+//			if (grid[i][j] != Grid.EMPTY_SPACE) {
+//				int k = (int)grid[i][j] - 65;
+//				h = (h) ^ ( (int)Math.pow(5, i) + (int)Math.pow(7,j) ) * ( (int)grid[i][j] - 64 );
+//			} else {
+//				h = (h) ^ 0;
+//			}
+//		}
+//	}
+	
+//	return h;
+		
+		
+//		return Arrays.deepHashCode(grid);
+		
+//		int hash = 0;
+//		for (Map.Entry<Character, Integer> e : characters.entrySet()) {
+//			hash ^= (int)Math.pow((int)(char)e.getKey()-64, e.getValue());
+//		}
+		
+//		return hash^intersections.hashCode();
+		
+//		return sb.toString().hashCode();
+//		return seed;
+//		return hash;
 	}
 
 	/**
