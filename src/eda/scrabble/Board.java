@@ -26,7 +26,7 @@ public class Board extends Grid {
 	public Board(Board board) {
 		super(board);
 		this.dictionary = board.dictionary;
-		this.words = board.words;
+		this.words = new LinkedList<WordXY>(board.words);
 //		__init();
 	}
 

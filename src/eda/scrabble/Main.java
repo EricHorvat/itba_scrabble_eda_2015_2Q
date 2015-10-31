@@ -4,7 +4,7 @@ import eda.scrabble.Game.GameParameters;
 
 public class Main {
 
-	private final static boolean EXACT_GAME = true;
+	private final static boolean EXACT_GAME = false;
 	
 	private final static boolean DEBUG = false;
 	
@@ -94,7 +94,7 @@ public class Main {
 		
 		long start = System.nanoTime();
 		
-		if (EXACT_GAME || params.getMaxTime() == 0) {
+		if (EXACT_GAME && params.getMaxTime() == 0) {
 			
 			game = new ExactGame(params);
 		

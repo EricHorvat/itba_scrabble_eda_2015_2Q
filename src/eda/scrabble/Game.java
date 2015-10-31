@@ -224,7 +224,7 @@ public abstract class Game {
 	
 	protected GameParameters params;
 	
-	protected double eta = System.nanoTime()+20*10E9;
+	protected double eta = System.nanoTime()+2*1E9;
 	
 	public enum Direction {
 		HORIZONTAL,
@@ -243,7 +243,7 @@ public abstract class Game {
 					InputData.DictionaryFillStrategy.HIGHEST_VALUE,
 					map);
 			if (params.getMaxTime() > 0) {
-				this.eta = System.nanoTime()+params.getMaxTime()*10E9;
+				this.eta = System.nanoTime()+params.getMaxTime()*1E9;
 			}
 		} else {
 			map = InputData.getGameChars(LETTERS_FILENAME);
@@ -311,19 +311,19 @@ public abstract class Game {
 			withinBounds = false;
 		}
 		if (d == Direction.HORIZONTAL) {
-			if (x+word.length() >= grid.size()) {
+			if (x+word.length() > grid.size()) {
 				withinBounds = false;
 			}
 		} else {
-			if (y+word.length() >= grid.size()) {
+			if (y+word.length() > grid.size()) {
 				withinBounds = false;
 			}
 		}
 		
 		if (!withinBounds) {
-			for (int j = 0; j < word.length(); j++) {
+//			for (int j = 0; j < word.length(); j++) {
 //				grid.addCharacter((Character)word.charAt(j));
-			}
+//			}
 			return new AddWordResult("Words is out of board");
 		}
 		
@@ -538,10 +538,9 @@ public abstract class Game {
 	}
 	
 	private void removeWordVisually(WordXY word, Grid grid) {
-		
 		if (word.direction == Direction.HORIZONTAL) {
 			for (int i = word.pos.x; i < word.word.length()+word.pos.x; i++) {
-				if (!grid.isOccupied(i, word.pos.y)) {
+				if (!grid.isOccupied(i, word.pos.y) && word.word.charAt(i - word.pos.x) != Grid.EMPTY_SPACE) {
 					if (DEBUG) System.out.println("resetting "+(new Coordinate(i, word.pos.y)) + " " + word.word.charAt(i - word.pos.x));
 					grid.addCharacter((Character) word.word.charAt(i - word.pos.x));
 					grid.set(i, word.pos.y, Grid.EMPTY_SPACE);
@@ -549,7 +548,7 @@ public abstract class Game {
 			}
 		} else {
 			for (int i = word.pos.y; i < word.word.length()+word.pos.y; i++) {
-				if (!grid.isOccupied(word.pos.x, i)) {
+				if (!grid.isOccupied(word.pos.x, i) && word.word.charAt(i - word.pos.y) != Grid.EMPTY_SPACE) {
 					if (DEBUG) System.out.println("resetting "+(new Coordinate(word.pos.x, i)));
 					grid.addCharacter((Character) word.word.charAt(i - word.pos.y));
 					grid.set(word.pos.x, i, Grid.EMPTY_SPACE);

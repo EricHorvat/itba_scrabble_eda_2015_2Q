@@ -323,7 +323,13 @@ public class Grid {
 	 * @return the intersections
 	 */
 	public Map<Coordinate, Boolean> getIntersections() {
-		return intersections;
+		HashMap<Coordinate, Boolean> hm = new HashMap<Coordinate, Boolean>();
+		for (Map.Entry<Coordinate, Boolean> e : intersections.entrySet()) {
+			if (e.getValue() != null && e.getValue() == true) {
+				hm.put(e.getKey(), e.getValue());
+			}
+		}
+		return hm;
 	}
 	
 	public int getUsed() {
