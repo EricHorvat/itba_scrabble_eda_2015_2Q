@@ -1,23 +1,14 @@
 package eda.scrabble;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-
-import eda.scrabble.Game.Direction;
-import eda.scrabble.Game.GameParameters;
-import eda.scrabble.Game.LetterXY;
-import eda.scrabble.Game.WordXY;
-import eda.scrabble.file.InputData;
 
 public class ExactGame extends Game {
 	
-	Grid bestGrid;
+	Board bestGrid;
 	
 	int numberOfLetters;
 	
@@ -178,7 +169,7 @@ public class ExactGame extends Game {
 							score = grid.getScore();
 							if (score > maxScore) {
 								maxScore = score;
-								bestGrid = new Grid(grid);
+								bestGrid = new Board(grid);
 							}
 							 
 							// Mostramos el tablero
@@ -268,8 +259,8 @@ public class ExactGame extends Game {
 	
 	private void cleanBoard() {
 	// Clean board
-		while (words.size() > 0) { 
-			removeWord(words.get(words.size()-1));
+		while (grid.getWords().size() > 0) { 
+			removeWord(grid.getWords().get(grid.getWords().size()-1));
 		}
 	}
 	
@@ -282,7 +273,7 @@ public class ExactGame extends Game {
 		
 		maxScore = 0;
 		
-		bestGrid = new Grid(grid.characters);
+		bestGrid = new Board(grid.characters);
 		
 		List<String> allWords = grid.getDictionary().getWords();
 		
@@ -331,7 +322,6 @@ public class ExactGame extends Game {
 					
 					// No llega nunca el tablero esta siempre vacio
 					grid.print();
-					System.out.println(grid.getIntersections());
 					System.out.println(result.msg);
 					return;
 				}

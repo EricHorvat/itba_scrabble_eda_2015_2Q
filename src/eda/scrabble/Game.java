@@ -1,9 +1,7 @@
 package eda.scrabble;
 
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -205,8 +203,22 @@ public abstract class Game {
 		
 	}
 	
+	public enum Direction {
+		HORIZONTAL,
+		VERTICAL
+	};
+	
+	/**
+	 * @deprecated
+	 */
 	protected final static String DICTIONARY_FILENAME = "words2.txt";
+	/**
+	 * @deprecated
+	 */
 	protected final static String LETTERS_FILENAME = "letters2.txt";
+	/**
+	 * @deprecated
+	 */
 	protected final static String CHAR_VALUE_FILENAME = "charValue.txt";
 	
 	protected final static int MAX_LENGTH_WORD = 7;
@@ -216,20 +228,16 @@ public abstract class Game {
 	
 	public final static Map<Character,Integer> VALUE_MAP = InputData.fillValueMap(CHAR_VALUE_FILENAME);
 	
+	/**
+	 * Nuestro tablero por defecto
+	 */
 	protected Board grid;
-	
-	protected List<WordXY> words = new ArrayList<WordXY>();
 	
 	protected int maxScore = 0;
 	
 	protected GameParameters params;
 	
 	protected double eta = System.nanoTime()+2*1E9;
-	
-	public enum Direction {
-		HORIZONTAL,
-		VERTICAL
-	};
 	
 	public Game(GameParameters params) {
 		this.params = params;
@@ -258,6 +266,11 @@ public abstract class Game {
 		if (DEBUG) System.out.println("Load Time: " + end/1000000.0 + "ms");
 	}
 	
+	/**
+	 * Obtiene un listado de caracteres disponibles a partir de un mapa de caracteres
+	 * @param characters
+	 * @return un listado de caracteres disponibles
+	 */
 	public static List<Character> getAvailableChars(Map<Character, Integer> characters) {
 		List<Character> l = new ArrayList<Character>(characters.entrySet().size());
 		
@@ -270,6 +283,10 @@ public abstract class Game {
 		return l;
 	}
 	
+	/**
+	 * Obtiene los caracteres disponibles en el tablero por defecto
+	 * @return un listado de caracteres disponibles
+	 */
 	public List<Character> getAvailableChars() {
 		List<Character> l = new ArrayList<Character>(grid.characters.entrySet().size());
 		
@@ -283,12 +300,9 @@ public abstract class Game {
 	}
 	
 	protected AddWordResult addWord(int x, int y, Direction d, String word) {
-		return addWord(x, y, d, word, grid, null, grid.getDictionary());
+		return addWord(x, y, d, word, grid);
 	}
 	
-	protected AddWordResult addWord(int x, int y, Direction d, String word, Board grid) {
-		return addWord(x, y, d, word, grid, null, grid.getDictionary());
-	}
 	
 	/**
 	 * Draws the word on the grid and 
@@ -300,50 +314,20 @@ public abstract class Game {
 	 * @throws IllegalArgumentException
 	 */
 	
-	protected AddWordResult addWord(int x, int y, Direction d, String word, Grid grid, Deque<WordXY> words, Dictionary dictionary) {
+	protected AddWordResult addWord(int x, int y, Direction d, String word, Board grid) {
 		
-		boolean withinBounds = true;
-		
-		if (x < 0 || y < 0) {
-			withinBounds = false;
-		}
-		if (x >= grid.size() || y >= grid.size()) {
-			withinBounds = false;
-		}
-		if (d == Direction.HORIZONTAL) {
-			if (x+word.length() > grid.size()) {
-				withinBounds = false;
-			}
-		} else {
-			if (y+word.length() > grid.size()) {
-				withinBounds = false;
-			}
-		}
-		
-		if (!withinBounds) {
-//			for (int j = 0; j < word.length(); j++) {
-//				grid.addCharacter((Character)word.charAt(j));
-//			}
-			return new AddWordResult("Words is out of board");
+		if (!grid.canHaveWord(word, new Coordinate(x, y), d)) {
+			return new AddWordResult("Word is out of board");
 		}
 		
 		if (DEBUG) System.out.println("inserting "+word+" at x:"+x+" y:"+y+" "+d);
 		
-		
-		
 		switch (d) {
 			case HORIZONTAL:
 				if (grid.get(x-1, y) != Grid.EMPTY_SPACE) {
-//					for (int j = x; j < x+word.length(); j++) {
-//							grid.addCharacter((Character)word.charAt(j-x));
-//					}
-					
 					return new AddWordResult("Horizontal failed left");
 				}
 				if (grid.get(x+word.length(), y) != Grid.EMPTY_SPACE) {
-//					for (int j = x; j < x+word.length(); j++) {
-//							grid.addCharacter((Character)word.charAt(j-x));
-//					}
 					return new AddWordResult("horizontal failed right");
 				}
 				
@@ -364,8 +348,7 @@ public abstract class Game {
 						for (int k = s.length() -1; k >= 0; k--)
 							reverse += s.charAt(k);
 						// verificamos que este en el diccionario
-						if (!dictionary.contains(reverse)) {
-							
+						if (!grid.getDictionary().contains(reverse)) {
 							// Marcamos para eliminar
 							needsRemoval = true;
 						}
@@ -379,7 +362,7 @@ public abstract class Game {
 							j++;
 						}
 						// verificamos que este en el diccionario
-						if (!dictionary.contains(s)) {
+						if (!grid.getDictionary().contains(s)) {
 							
 							// Marcamos para eliminar
 							needsRemoval = true;
@@ -399,18 +382,7 @@ public abstract class Game {
 								grid.set(j, y, Grid.EMPTY_SPACE);
 							}
 						}
-//						for (int j = x; j < x+word.length(); j++) {
-//							boolean isIntersection = grid.isOccupied(j, y);
-//							if (j <= i - 1 && !isIntersection) {
-								
-								// Borramos el caracter que habia
-//								grid.set(j, y, Grid.EMPTY_SPACE);
-//							}
-//							if (DEBUG) System.out.print(word.charAt(j-x) + " ");
-//							grid.addCharacter((Character)word.charAt(j-x));
 						return new AddWordResult("Failed to insert horizontally");
-//						if (DEBUG) System.out.println();
-						
 					}
 					if (word.charAt(i-x) != Grid.EMPTY_SPACE)
 						grid.set(i, y, word.charAt(i-x));
@@ -423,15 +395,9 @@ public abstract class Game {
 			 */
 			case VERTICAL:
 				if (grid.get(x, y-1) != Grid.EMPTY_SPACE) {
-//					for (int j = y; j < y+word.length(); j++) {
-//							grid.addCharacter((Character)word.charAt(j-y));
-//					}
 					return new AddWordResult("vertical failed top found "+grid.get(x, y-1));
 				}
 				if (grid.get(x,word.length()+y) != Grid.EMPTY_SPACE) {
-//					for (int j = y; j < y+word.length(); j++) {
-//							grid.addCharacter((Character)word.charAt(j-y));
-//					}
 					return new AddWordResult("vertical failed bottom found "+grid.get(x, word.length()+y));
 				}
 				for (int i = y; i < y+word.length(); i++) {
@@ -446,7 +412,7 @@ public abstract class Game {
 							s += grid.get(x+j,i);
 							j++;
 						}
-						if (!dictionary.contains(s)) {
+						if (!grid.getDictionary().contains(s)) {
 							// Sacar del tablero lo que quedo
 							needsRemoval = true;
 							
@@ -463,7 +429,7 @@ public abstract class Game {
 						String reverse = "";
 						for (int k = s.length() -1; k >= 0; k--)
 							reverse += s.charAt(k);
-						if (!dictionary.contains(reverse)) {
+						if (!grid.getDictionary().contains(reverse)) {
 							// Sacar del tablero lo que quedo
 							
 							needsRemoval = true;
@@ -482,35 +448,17 @@ public abstract class Game {
 								grid.set(x, j, Grid.EMPTY_SPACE);
 							}
 						}
-//						for (int j = y; j < y+word.length(); j++) {
-//							boolean isIntersection = grid.isOccupied(x, j);// used.get(new Coordinate(x, j));
-//							if (j <= i - 1 && !isIntersection) {
-//								if (DEBUG) System.out.println("Attempting to remove " + word.charAt(j-y));
-//								if (isIntersection) continue;
-								
-								// Borramos el caracter que habia
-//								grid.set(x, j, Grid.EMPTY_SPACE);
-//							}
-//							if (DEBUG) System.out.print(word.charAt(j-y) + " ");
-//							grid.addCharacter((Character)word.charAt(j-y));
-//						}
-//						if (DEBUG) System.out.println();
-						
 						return new AddWordResult("Failed to insert vertically");
 					}
 					if (word.charAt(i-y) != Grid.EMPTY_SPACE)
 						grid.set(x, i, word.charAt(i-y));
-				} 
+				}
 				break;
 		}
 		
 		WordXY wordXY = new WordXY(word, new Coordinate(x, y), d);
 		
-		if (words != null) {
-			words.push(wordXY);
-		} else {
-			this.words.add(wordXY);
-		}
+		grid.addWord(wordXY);
 		
 		return new AddWordResult(wordXY);
 		
@@ -520,24 +468,13 @@ public abstract class Game {
 		return removeWord(word, grid);
 	}
 	
-	protected WordXY removeWord(WordXY word, Grid grid) {
-		this.words.remove(word);
+	protected WordXY removeWord(WordXY word, Board grid) {
+		grid.removeWord(word);
 		removeWordVisually(word, grid);
 		return word;
 	}
 	
-	protected WordXY removeWord(Deque<WordXY> words) {
-		return removeWord(words, grid);
-	}
-	
-	protected WordXY removeWord(Deque<WordXY> words, Grid grid) {
-		WordXY word = words.pop();
-		removeWordVisually(word, grid);
-		return word;
-		
-	}
-	
-	private void removeWordVisually(WordXY word, Grid grid) {
+	private void removeWordVisually(WordXY word, Board grid) {
 		if (word.direction == Direction.HORIZONTAL) {
 			for (int i = word.pos.x; i < word.word.length()+word.pos.x; i++) {
 				if (!grid.isOccupied(i, word.pos.y) && word.word.charAt(i - word.pos.x) != Grid.EMPTY_SPACE) {
