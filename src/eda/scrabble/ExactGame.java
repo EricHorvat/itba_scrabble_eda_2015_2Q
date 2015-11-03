@@ -24,7 +24,7 @@ public class ExactGame extends Game {
 		visitedGrids = new HashMap<Integer, Boolean>();
 	}
 	
-	private void possibleSolution1(List<Letter> willVisitLetters, int score) {
+	private void exactSolution(List<Letter> willVisitLetters, int score) {
 		
 		String aux = null;
 		Word toAdd = null;
@@ -87,6 +87,7 @@ public class ExactGame extends Game {
 						// Marcamos a la interseccion como lugar ocupado
 						grid.markIntersection(currentLetter.word.vec.pos, currentLetter.word.vec.dir, letterIndex);
 						
+						// Creamos la palabra a agregar
 						if (currentLetter.word.vec.dir == Direction.HORIZONTAL) {
 							
 							toAdd = new Word(aux, new Vector(
@@ -107,6 +108,7 @@ public class ExactGame extends Game {
 							
 						}
 						
+						// Nos fijamos si se agrego
 						if (!addWord(toAdd, grid)) {
 							
 						// Marcamos el lugar que habiamos marcado como ocupado
@@ -147,8 +149,8 @@ public class ExactGame extends Game {
 									
 									// Consumimos el caracter
 									grid.removeCharacter(c);
-									// Lo ponemos en la lista de a visitar
 									
+									// Lo ponemos en la lista de a visitar
 									if (toAdd.vec.dir == Direction.HORIZONTAL) {
 										if (grid.get(toAdd.vec.pos.x+j, toAdd.vec.pos.y+1) == Grid.EMPTY_SPACE &&
 												grid.get(toAdd.vec.pos.x+j, toAdd.vec.pos.y-1) == Grid.EMPTY_SPACE) {
@@ -168,10 +170,11 @@ public class ExactGame extends Game {
 							
 							if (visited == null || visited == false) {
 								
+								// Marcamos el tablero como visitado
 								visitedGrids.put(hc, true);
 								
 								// Perform recursive call to same method
-								possibleSolution1(willVisitLetters, score);
+								exactSolution(willVisitLetters, score);
 							} else {
 								
 //								grid.print();
@@ -235,6 +238,8 @@ public class ExactGame extends Game {
 		
 		Word tmp = null;
 		
+		int score;
+		
 		for (String w : allWords) {
 			
 			int x = grid.size()/2-w.length()+1;
@@ -249,6 +254,14 @@ public class ExactGame extends Game {
 				
 				addWord(tmp, grid);
 				
+				// Nos fijamos si este es mejor tablero que el anterior mejor
+				// De ser asi actualizamos
+				score = grid.getScore();
+				if (score > maxScore) {
+					maxScore = score;
+					bestGrid = new Board(grid);
+				}
+				
 				for (int j = 0; j < w.length(); j++) {
 					// Mark characters as used
 					grid.removeCharacter((Character)w.charAt(j));
@@ -259,7 +272,7 @@ public class ExactGame extends Game {
 					grid.printSimple();
 				}
 				
-				possibleSolution1(willVisitLetters, 0);
+				exactSolution(willVisitLetters, 0);
 				
 				
 				willVisitLetters.clear();

@@ -12,8 +12,6 @@ public class Grid {
 	public final static int GRID_SIZE = 15;
 	public final static char EMPTY_SPACE = ' ';
 	
-	public final static boolean DEBUG = false;
-	
 	/**
 	 * Nuestro almacenamiento de la grilla
 	 */

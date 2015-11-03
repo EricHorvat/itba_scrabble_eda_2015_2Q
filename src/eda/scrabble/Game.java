@@ -93,7 +93,6 @@ public abstract class Game {
 	
 	public Game(GameParameters params) {
 		this.params = params;
-		long start = System.nanoTime();
 		Map<Character, Integer> map = new HashMap<Character, Integer>();
 		Dictionary dictionary = null;
 		map = InputData.getGameChars(params.lettersFileName);
@@ -106,7 +105,6 @@ public abstract class Game {
 		}
 		grid = new Board(map);
 		grid.setDictionary(dictionary);
-		long end = System.nanoTime() - start;
 	}
 	
 	/**

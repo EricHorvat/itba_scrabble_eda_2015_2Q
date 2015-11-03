@@ -12,7 +12,8 @@ public class LimitedTimeGame extends Game {
 	
 	private final static double T = 6.5;
 	
-	private final static boolean STOCHASTIC = false;
+	// Es publico para los tests
+	public static boolean STOCHASTIC = false;
 	
 	private StackBoard bestestBoard;
 	
@@ -66,7 +67,7 @@ public class LimitedTimeGame extends Game {
 			bestLetter = null;
 			wordToAdd = null;
 			
-			bestBoard.print();
+//			bestBoard.print();
 			
 			for (Letter letter : lettersToVisit) { // Recorro cada una de las letras disponibles
 				
@@ -187,8 +188,12 @@ public class LimitedTimeGame extends Game {
 		} while( System.nanoTime() < this.eta );
 		
 		
-		System.out.println("bestest " + bestestBoard.getScore());
-		bestestBoard.print();
+//		System.out.println("bestest " + bestestBoard.getScore());
+		try {
+			board.printSimpleDump(params.outputFileName);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	
@@ -329,8 +334,9 @@ public class LimitedTimeGame extends Game {
 				maxScore = score;
 			}
 			
-			if (this.params.isVisual())
+			if (this.params.isVisual()) {
 				bestBoard.printSimple();
+			}
 			
 			
 			// Si no eligio ninguna palabra
@@ -378,7 +384,7 @@ public class LimitedTimeGame extends Game {
 			
 		} while ( System.nanoTime() < this.eta );
 		
-		System.out.println("Max Score: " + bestestBoard.getScore());
+//		System.out.println("Max Score: " + bestestBoard.getScore());
 		
 //		bestestBoard.print();
 			
@@ -394,7 +400,7 @@ public class LimitedTimeGame extends Game {
 	@Override
 	public void solve() {
 		
-		long start = System.nanoTime();
+//		long start = System.nanoTime();
 		
 		maxScore = 0;
 		
@@ -404,8 +410,8 @@ public class LimitedTimeGame extends Game {
 			hillClimb();
 		}
 		
-		long end = System.nanoTime() - start; 
-		System.out.println("Run Time: " + end/1000000.0 + "ms");
+//		long end = System.nanoTime() - start; 
+//		System.out.println("Run Time: " + end/1000000.0 + "ms");
 		
 	}
 

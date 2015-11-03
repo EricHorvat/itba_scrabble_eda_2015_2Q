@@ -3,22 +3,11 @@ package eda.scrabble;
 import eda.scrabble.Game.GameParameters;
 
 public class Main {
-
-	private final static boolean EXACT_GAME = false;
 	
-	private final static boolean DEBUG = false;
-	
-	private static GameParameters parseParameters(String[] args) {
+	// Para testeo es public
+	public static GameParameters parseParameters(String[] args) {
 		
 		GameParameters params = new GameParameters();
-		
-		if (DEBUG) {
-			System.out.println("received: ");
-			for (String s : args)
-				System.out.print(s + " ");
-			System.out.println();
-		}
-		
 		//dict
 		try {
 			if (args[0].trim().equals("")) {
@@ -90,9 +79,8 @@ public class Main {
 		if (params == null) {
 			System.err.println("Error de Parseo de Parametros");
 			printUsage();
+			return;
 		}
-		
-		long start = System.nanoTime();
 		
 		if (params.getMaxTime() == 0) {
 			
@@ -106,9 +94,6 @@ public class Main {
 		
 		
 		game.start();
-		
-		long end = System.nanoTime() - start; 
-		if (DEBUG) System.out.println("Run Time: " + end/1000000.0 + "ms");
 	}
 	
 
