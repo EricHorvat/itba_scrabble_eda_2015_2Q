@@ -23,12 +23,12 @@ public class ExactGame extends Game {
 		visitedGrids = new HashMap<Integer, Boolean>();
 	}
 	
-	private void possibleSolution1(List<LetterXY> willVisitLetters, int score) {
+	private void possibleSolution1(List<Letter> willVisitLetters, int score) {
 		
 		String aux = null;
-		WordXY toAdd = null;
+		Word toAdd = null;
 		
-		LetterXY currentLetter = null;
+		Letter currentLetter = null;
 		
 		if (DEBUG) printUsed(willVisitLetters);
 		
@@ -44,8 +44,8 @@ public class ExactGame extends Game {
 			return;
 		
 		// Backup used letters for restauration later
-		List<LetterXY> backup = new ArrayList<LetterXY>(grid.size()*grid.size());
-		for (LetterXY l : willVisitLetters)
+		List<Letter> backup = new ArrayList<Letter>(grid.size()*grid.size());
+		for (Letter l : willVisitLetters)
 			backup.add(l);
 		
 		// Loop through @{used}. It contains the letters that will be analyzed
@@ -124,11 +124,7 @@ public class ExactGame extends Game {
 						//letter.word.word.indexOf(letter.c);
 						
 						// Marcamos a la interseccion como lugar ocupado
-						if (currentLetter.word.direction == Direction.HORIZONTAL) {
-							grid.markOccupied(currentLetter.word.pos.x+letterIndex, currentLetter.word.pos.y);
-						} else {
-							grid.markOccupied(currentLetter.word.pos.x, currentLetter.word.pos.y+letterIndex);
-						}
+						grid.markIntersection(currentLetter.word.pos, currentLetter.word.direction, letterIndex);
 						
 						// Attempt to add word
 						AddWordResult result;
@@ -144,14 +140,9 @@ public class ExactGame extends Game {
 							
 							// Marcamos el lugar que habiamos marcado como ocupado
 							// como libre porque no agregamos la palabra
-							if (currentLetter.word.direction == Direction.HORIZONTAL) {
-								grid.markAvailable(currentLetter.word.pos.x+letterIndex, currentLetter.word.pos.y);
-							} else {
-								grid.markAvailable(currentLetter.word.pos.x, currentLetter.word.pos.y+letterIndex);
-							}
+							grid.clearIntersection(currentLetter.word.pos, currentLetter.word.direction, letterIndex);
 							
 							// Seguimos y probamos si la proxima palabra calza en este lugar
-							
 							intersectionIndex = aux.indexOf(currentLetter.c, intersectionIndex+1);
 							
 							continue;
@@ -188,7 +179,7 @@ public class ExactGame extends Game {
 								if (j != intersectionIndex) {
 									if (DEBUG) System.out.print(c + " ");
 									grid.removeCharacter(c);
-									willVisitLetters.add(new LetterXY(toAdd, c, j));
+									willVisitLetters.add(new Letter(toAdd, c, j));
 								}
 							}
 							if (DEBUG) System.out.println();
@@ -224,16 +215,11 @@ public class ExactGame extends Game {
 							
 							// Marcamos la interseccion como disponible porque ya que sacamos la palabra
 							// no hay mas interseccion
-							if (currentLetter.word.direction == Direction.HORIZONTAL) {
-								grid.markAvailable(currentLetter.word.pos.x+letterIndex, currentLetter.word.pos.y);
-							} else {
-								grid.markAvailable(currentLetter.word.pos.x, currentLetter.word.pos.y+letterIndex);
-							}
-							
+							grid.clearIntersection(currentLetter.word.pos, currentLetter.word.direction, letterIndex);
 							
 							// Restauramos la informacion para que el proximo ciclo haga su trabajo
 							willVisitLetters.clear();
-							for (LetterXY l: backup)
+							for (Letter l: backup)
 								willVisitLetters.add(l);
 							
 							if (DEBUG) {
@@ -278,9 +264,9 @@ public class ExactGame extends Game {
 		List<String> allWords = grid.getDictionary().getWords();
 		
 		// Reservo a lo sumo grid.size()^2 de letras
-		List<LetterXY> willVisitLetters = new ArrayList<LetterXY>(grid.size()*grid.size());
+		List<Letter> willVisitLetters = new ArrayList<Letter>(grid.size()*grid.size());
 		
-		WordXY tmp = null;
+		Word tmp = null;
 		
 		numberOfLetters = getAvailableChars().size();
 		
@@ -334,7 +320,7 @@ public class ExactGame extends Game {
 				for (int j = 0; j < w.length(); j++) {
 					// Mark characters as used
 					grid.removeCharacter((Character)w.charAt(j));
-					willVisitLetters.add(new LetterXY(tmp, (Character)w.charAt(j), j));
+					willVisitLetters.add(new Letter(tmp, (Character)w.charAt(j), j));
 				}
 				
 				grid.print();

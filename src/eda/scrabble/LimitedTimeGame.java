@@ -24,77 +24,78 @@ import eda.scrabble.file.InputData;
 
 public class LimitedTimeGame extends Game {
 
-	private List<StackBoard> boards;
+	private StackBoard board;
 	
 	private final static double T = 6.5;
 	
-	private final static boolean STOCHASTIC = false;
-	private final static boolean DEBUG = false;
+	private final static boolean STOCHASTIC = true;
+	private final static boolean DEBUG = true;
 	
 	private StackBoard bestestBoard;
+	
+	private List<Letter> lettersToVisit = new ArrayList<Letter>(Grid.GRID_SIZE*Grid.GRID_SIZE);
+	
+	private List<String> dictionaryWords;
 	
 	public LimitedTimeGame(GameParameters params) {
 		super(params);
 		
-		boards = new ArrayList<StackBoard>(5);
-		
-		// Default Dictionary from Game class
-		/** @see @{Game}  */
-		boards.add((StackBoard) grid);
-		
-		for (int i = 0; i < 4; i++) {
-			boards.add(new StackBoard(grid.characters));
-		}
-		
-		boards.get(1).setDictionary(InputData.fillDictionary(
-				DICTIONARY_FILENAME,
-				InputData.DictionaryFillStrategy.NONE,
-				grid.characters));
-		
-		boards.get(2)
-		.setDictionary(InputData.fillDictionary(
-				DICTIONARY_FILENAME,
-				InputData.DictionaryFillStrategy.LOWEST_VALUE,
-				grid.characters));
-		
-		boards.get(3)
-		.setDictionary(InputData.fillDictionary(
-				DICTIONARY_FILENAME,
-				InputData.DictionaryFillStrategy.LOWEST_OCURRENCY,
-				grid.characters));
-		
-		boards.get(4)
-		.setDictionary(InputData.fillDictionary(
-				DICTIONARY_FILENAME,
-				InputData.DictionaryFillStrategy.HIGHEST_OCURRENCY,
-				grid.characters));
-		
+		board = new StackBoard(grid);
+		dictionaryWords = board.getDictionary().getWords();
 	}
 	
-	private void lettersBuildUpForBoard(List<LetterXY> letters, StackBoard board) {
+	private void buildUpLetters() {
 		
-		Iterator<WordXY> it = board.getWordsStack().descendingIterator();
+		Iterator<Word> it = board.getWordsStack().descendingIterator();
 		while (it.hasNext()) {
-			WordXY next = it.next();
+			Word next = it.next();
 			
 			if (next.direction == Direction.HORIZONTAL) {
 				for (int j = next.pos.x; j < next.pos.x+next.word.length(); j++) {
 					
 					if (!board.isIntersection(j, next.pos.y)) {
-						letters.add(new LetterXY(next, (Character)next.word.charAt(j-next.pos.x), j-next.pos.x));
+						lettersToVisit.add(new Letter(next, (Character)next.word.charAt(j-next.pos.x), j-next.pos.x));
 					}
 				}
 			} else {
 				for (int j = next.pos.y; j < next.pos.y+next.word.length(); j++) {
 					
 					if (!board.isIntersection(next.pos.x, j)) {
-						letters.add(new LetterXY(next, (Character)next.word.charAt(j-next.pos.y), j-next.pos.y));
+						lettersToVisit.add(new Letter(next, (Character)next.word.charAt(j-next.pos.y), j-next.pos.y));
 					}
 				}
 			}
 			
 		}
 		
+	}
+	
+	private void addRandomWordToBoard() {
+	// Empezamos con una palabra aleatoria
+		String randomWord = dictionaryWords.get( ((int)(Math.random() * 1000)) % dictionaryWords.size() );
+		Word w = null;
+		
+		AddWordResult result = addWord(
+				(board.size()-randomWord.length())/2,
+				board.size()/2,
+				Direction.HORIZONTAL,
+				randomWord,
+				board
+		);
+		
+		if (!result.success) {
+			// Bastante imposible que suceda esto. Agregar una palabra valida en un tablero vacio
+			if (DEBUG) System.out.println(result.msg);
+		} else {
+			
+			w = result.word;
+			
+			lettersToVisit.clear();
+			for (int j = 0; j < w.word.length(); j++) {
+				board.removeCharacter((Character)w.word.charAt(j));
+				lettersToVisit.add(new Letter(w, (Character)w.word.charAt(j), j));
+			}
+		}
 	}
 	
 	private void hillClimb() {
@@ -192,10 +193,11 @@ public class LimitedTimeGame extends Game {
 				
 			}
 			
-			
+			System.out.println(localMaxScore + " " + maxScore);
 			
 			if (localMaxScore > maxScore) {
 				maxScore = localMaxScore;
+				System.out.println("nuevo bestest");
 				bestestBoard = new StackBoard(bestBoard);
 			}
 			
@@ -320,106 +322,103 @@ public class LimitedTimeGame extends Game {
 		
 	}
 	
-	private void hillClimbStochastic(StackBoard board) {
+	private void hillClimbStochastic() {
 		
-	// Armamos Letters
-		List<LetterXY> letters = new ArrayList<LetterXY>(Grid.GRID_SIZE*Grid.GRID_SIZE);
+		Deque<List<Letter>> backup = new LinkedList<List<Letter>>();
 		
-		Iterator<WordXY> it = board.getWordsStack().descendingIterator();	
-		while (it.hasNext()) {
-			WordXY next = it.next();
-			
-			if (next.direction == Direction.HORIZONTAL) {
-				for (int j = next.pos.x; j < next.pos.x+next.word.length(); j++) {
-					
-					if (!board.isIntersection(j, next.pos.y)) {
-						letters.add(new LetterXY(next, (Character)next.word.charAt(j-next.pos.x), j-next.pos.x));
-					}
-				}
-			} else {
-				for (int j = next.pos.y; j < next.pos.y+next.word.length(); j++) {
-					
-					if (!board.isIntersection(next.pos.x, j)) {
-						letters.add(new LetterXY(next, (Character)next.word.charAt(j-next.pos.y), j-next.pos.y));
-					}
-				}
-			}
-			
-		}
+		backup.push(new ArrayList<Letter>());
+		
+		// Tiramos una palabra al azar en el tablero
+		// y creamos el array de letras a visitar
+		// tambien consumimos los caracteres utilizados
+		addRandomWordToBoard();
 		
 //		System.out.println("Hill Climb Stochastic");
 		
 		StackBoard bestBoard = board;
-		WordXY wordToAdd = null; 
-		LetterXY bestLetter = null;
+		Word wordToAdd = null; 
+		Letter bestLetter = null;
+		String aux = null;
+		boolean found = false;
 		
-		do {
+		do { // Mientras tengamos tiempo
 			
 			if (DEBUG) board.print();
 		
 			bestBoard = board;
 			wordToAdd = null;
 			bestLetter = null;
+			aux = null;
 			
 			int initScore = board.getScore();
 			
-			String aux = null;
+			found = false;
 			
-			boolean found = false;
-			
-			for (LetterXY letter : letters) {
+			if (DEBUG) {
+				List<Character> lj = getAvailableChars(board.characters);
+				System.out.println("("+lj.size()+"): "+lj + " " + board.characters);
+			}
 				
-				do {
+			int intersectionIndex = -1;
+				
+			for (Letter letter : lettersToVisit) { // En todas las letras donde podamos agregar palabras
+				
+				do { // Probamos todas las palabras que se pueden agregar en esa letra
 					
+					// obtenemos esa palabra
 					aux = board.getDictionary().bestLimitedOptionAfter(board.getCharacters(), MAX_LENGTH_WORD, letter.c, aux);
 					
-					if (DEBUG) System.out.println("/SEARCH/"+letter.word.word+"/"+letter.c+"/"+aux);
+//					if (DEBUG) System.out.println("/SEARCH/"+letter.word.word+"/"+letter.c+"/"+aux);
 					
+					// Si todavia me quedan palabras
 					if (aux != null) {
 					
-						WordXY toAdd;
+						Word toAdd;
 						
-						int intersectionIndex = aux.indexOf(letter.c);
+						intersectionIndex = aux.indexOf(letter.c);
 						
-						if (letter.word.direction == Direction.HORIZONTAL) {
-							board.markIntersection(letter.word.pos.x+letter.pos, letter.word.pos.y);
-						} else {
-							board.markIntersection(letter.word.pos.x, letter.word.pos.y+letter.pos);
-						}
+						board.markIntersection(letter.word.pos, letter.word.direction, letter.pos);
 						
 						AddWordResult result;
 						
 						StringBuilder sb = new StringBuilder(aux);
 						sb.setCharAt(intersectionIndex, ' ');
 						
+						// La agreguamos
 						if (letter.word.direction == Direction.HORIZONTAL) {
 							result = addWord(letter.word.pos.x+letter.pos, letter.word.pos.y-intersectionIndex, Direction.VERTICAL, sb.toString(), board);
 						} else {
 							result = addWord(letter.word.pos.x-intersectionIndex, letter.word.pos.y+letter.pos, Direction.HORIZONTAL, sb.toString(), board);
 						}
 						
+						// Si Fallo el agregado
 						if (!result.success) {
 							
 							if (DEBUG) System.out.println("Failed. "+ result.msg);
 							
-							if (letter.word.direction == Direction.HORIZONTAL) {
-								board.clearIntersection(letter.word.pos.x+letter.pos, letter.word.pos.y);
-							} else {
-								board.clearIntersection(letter.word.pos.x, letter.word.pos.y+letter.pos);
-							}
+							board.clearIntersection(letter.word.pos, letter.word.direction, letter.pos);
 							
+							// Seguimos a buscar la proxima palabra que se pueda colocar en esta posicion
 							continue;
 							
 						} else {
 							
 							toAdd = result.word;
+							toAdd.word = aux;
 							
 							int score = board.getScore();
 							
+							// Calculamos la probabilidad
 							double p = 1 / ( 1 + Math.pow(Math.E, (initScore - score) / T ) );
 							
 							double rnd = Math.random();
 							if ( p > rnd) {
+								
+								if (DEBUG)
+									System.out.println("chosen");
+								
+								// Aca guardamos en bestBoard el tablero que elegimos
+								// estocasticamente para la proxima corrida
 								
 								bestBoard = new StackBoard(board);
 								wordToAdd = toAdd;
@@ -429,22 +428,48 @@ public class LimitedTimeGame extends Game {
 								
 								found = true;
 								
-								for (int k = 0; k < aux.length(); k++) {
-									if (k != intersectionIndex)
-										board.removeCharacter((Character)aux.charAt(k));
+								if (DEBUG) {
+									List<Character> llj = getAvailableChars(board.characters);
+									System.out.println("("+llj.size()+"): "+llj + " " + board.characters);
 								}
 								
+								for (int k = 0; k < aux.length(); k++) {
+									if (k != intersectionIndex) {
+										bestBoard.removeCharacter((Character)aux.charAt(k));
+										board.removeCharacter((Character)aux.charAt(k));
+									}
+								}
+								
+								if (DEBUG) {
+									List<Character> llj = getAvailableChars(board.characters);
+									System.out.println("("+llj.size()+"): "+llj + " " + board.characters);
+								}
+								
+								
+								// Con esto nos vamos
 								aux = null;
 								
 							} else {
 							
-								removeWord(result.word, board);
-							
-								if (letter.word.direction == Direction.HORIZONTAL) {
-									board.clearIntersection(letter.word.pos.x+letter.pos, letter.word.pos.y);
-								} else {
-									board.clearIntersection(letter.word.pos.x, letter.word.pos.y+letter.pos);
+								if (DEBUG)
+									System.out.println("not chosen");
+								
+								if (DEBUG) {
+									List<Character> llj = getAvailableChars(board.characters);
+									System.out.println("("+llj.size()+"): "+llj + " " + board.characters);
 								}
+								
+								// Sacamos la palabra que acabamos de agregar
+								// porque no cabia en el tablero
+								removeWord(result.word, board);
+								
+								if (DEBUG) {
+									List<Character> llj = getAvailableChars(board.characters);
+									System.out.println("("+llj.size()+"): "+llj + " " + board.characters);
+								}
+							
+								board.clearIntersection(letter.word.pos, letter.word.direction, letter.pos);
+								
 							}
 						}
 						
@@ -456,94 +481,65 @@ public class LimitedTimeGame extends Game {
 				
 			}
 			
-			if (bestBoard.getScore() > maxScore) {
-				bestestBoard = bestBoard;
-				maxScore = bestBoard.getScore();
+			
+			
+			int score = bestBoard.getScore();
+			
+			System.out.println(score);
+			
+			// Si supero el puntaje de mi maximo
+			if (score > maxScore) {
+				bestestBoard = new StackBoard(bestBoard);
+				maxScore = score;
 			}
 			
 			if (ANT && this.params.isVisual())
 				bestBoard.printSimple();
 			
-//			bestBoard.printSimple();
+			bestBoard.printSimple();
 			
 			
+			// Si no eligio ninguna palabra
+			// sacamos la ultima que agregamos
+			// para tener mas posibilidades de agregar otra
+			// y ademas nos alejamos de un maximo local
 			if (wordToAdd == null) {
 				if (DEBUG) {
 					System.out.println("wordToAdd: null");
 					board.print();
 				}
-				try {
+				if (!board.getWordsStack().isEmpty()) {
 					// Si no hay mas palabras me tira una excepcion
-					WordXY removed = removeWord(wordToAdd, board);
+					Word removed = removeWord(wordToAdd, board);
 					
-					if (DEBUG) printUsed(letters);
-					if (removed.direction == Direction.HORIZONTAL) {
-						for (int j = removed.pos.x; j < removed.pos.x+removed.word.length(); j++) {
-							if (!board.isIntersection(j, removed.pos.y)) {
-								letters.remove(new LetterXY(removed, (Character)removed.word.charAt(j-removed.pos.x), j-removed.pos.x));
-							} else {
-								board.clearIntersection(j, removed.pos.y);
-							}
-						}
-					} else {
-						for (int j = removed.pos.y; j < removed.pos.y+removed.word.length(); j++) {
-							if (!board.isIntersection(removed.pos.x, j)) {
-								letters.remove(new LetterXY(removed, (Character)removed.word.charAt(j-removed.pos.y), j-removed.pos.y));
-							} else {
-								board.clearIntersection(removed.pos.x, j);
-							}
-						}
-					}
-					if (DEBUG) printUsed(letters);
-				} catch (NoSuchElementException ex) {
+					lettersToVisit = backup.pop();
 					
+					
+				} else {
 					// Elegimos una palabra al azar del diccionario y empezamos a escalar a partir
 					// de ahi
 					
-					List<String> dictionaryWords = board.getDictionary().getWords(); 
-					String emergency = dictionaryWords.get( ((int)(Math.random() * 1000)) % dictionaryWords.size() );
-					if (DEBUG) System.out.println("remain chars ("+getAvailableChars(board.characters).size()+")"+ getAvailableChars(board.characters));
-					WordXY w = null;
-					AddWordResult result = addWord((board.size()-emergency.length())/2, grid.size()/2, Direction.HORIZONTAL, emergency, board);
+					addRandomWordToBoard();
 					
-					if (!result.success) {
-						if (DEBUG) System.out.println(result.msg);
-					} else {
-					
-						if (DEBUG) {
-							List<Character> lj = getAvailableChars(board.characters);
-							System.out.println("("+lj.size()+"): "+lj + " " + board.characters);
-						}
-						
-						w = result.word;
-						
-						letters.clear();
-						for (int j = 0; j < w.word.length(); j++) {
-							board.removeCharacter((Character)w.word.charAt(j));
-							letters.add(new LetterXY(w, (Character)w.word.charAt(j), j));
-						}
-						
-						if (DEBUG) {
-							List<Character> lj = getAvailableChars(board.characters);
-							System.out.println("("+lj.size()+"): "+lj + " " + board.characters);
-						}
-					}
 				}
 				
 			} else {
-			
-				boolean first = false;
+				// Si agregamos una palabra actualizamos letters
+				// para recorrer la proxima pasada
+//				boolean first = false;
 				if (DEBUG) System.out.println("2");
-				if (DEBUG) printUsed(letters);
+				if (DEBUG) printUsed(lettersToVisit);
 				for (int j = 0; j < wordToAdd.word.length(); j++) {
-					if (!first && wordToAdd.word.charAt(j) == (char)bestLetter.c) {
-						first = true;
-						letters.remove(bestLetter);
+					if (j == intersectionIndex) {
+//						first = true;
+						lettersToVisit.remove(bestLetter);
 					} else {
-						letters.add(new LetterXY(wordToAdd, (Character)wordToAdd.word.charAt(j), j));
+						lettersToVisit.add(new Letter(wordToAdd, (Character)wordToAdd.word.charAt(j), j));
 					}
 				}
-				if (DEBUG) printUsed(letters);
+				if (DEBUG) printUsed(lettersToVisit);
+				
+				board = bestBoard;
 			}
 			
 			
@@ -553,7 +549,7 @@ public class LimitedTimeGame extends Game {
 		
 		System.out.println("Max Score: " + bestestBoard.getScore());
 		
-		board.print();
+		bestestBoard.print();
 		
 		if (ANT) {
 			
@@ -568,100 +564,6 @@ public class LimitedTimeGame extends Game {
 		
 	}
 	
-	/**
-	 * Va agregando en profundidad por la primera palabra que puede conseguir
-	 * @param word La palabra en la cual arrancar
-	 */
-	private void firstDepth(StackBoard board) {
-			//Dictionary dictionary, WordXY word, Grid grid, Deque<WordXY> words) {
-		WordXY word = board
-				.getWordsStack()
-				.peek();
-		
-		if (word == null) return;
-		
-		String aux = null;
-		
-		if (DEBUG) System.out.println(word);
-		
-		for (int i = 0; i < word.word.length(); i++) {
-			
-			if (word.direction == Direction.HORIZONTAL) {
-				if (board.isIntersection(word.pos.x+i, word.pos.y)) {
-					continue;
-				}
-			} else {
-				if (board.isIntersection(word.pos.x, word.pos.y+i)) {
-					continue;
-				}
-			}
-			
-			Character intersectionChar = (Character)word.word.charAt(i);
-			
-			aux = board.getDictionary().bestFirstLimitedOption(board.getCharacters(), MAX_LENGTH_WORD, intersectionChar);
-			
-			if (DEBUG) System.out.println("SEARCH/"+word.word+"/"+intersectionChar+"/"+aux);
-			
-			if (aux == null) {
-			
-				continue;
-			}
-			
-			int intersectionIndex = aux.indexOf(intersectionChar);
-			
-			if (word.direction == Direction.HORIZONTAL) {
-				board.markIntersection(word.pos.x+i, word.pos.y);
-			} else {
-				board.markIntersection(word.pos.x, word.pos.y+i);
-			}
-			
-			AddWordResult result;
-			
-			
-			StringBuilder sb = new StringBuilder(aux);
-			sb.setCharAt(intersectionIndex, ' ');
-			
-			if (word.direction == Direction.HORIZONTAL) {
-				result = addWord(word.pos.x+i, word.pos.y-intersectionIndex, Direction.VERTICAL, sb.toString(), board);
-			} else {
-				result = addWord(word.pos.x-intersectionIndex, word.pos.y+i, Direction.HORIZONTAL, sb.toString(), board);
-			}
-			
-			if (!result.success) {
-				
-//				System.out.println("Failed. " + result.msg);
-				
-				if (word.direction == Direction.HORIZONTAL) {
-					board.clearIntersection(word.pos.x+i, word.pos.y);
-				} else {
-					board.clearIntersection(word.pos.x, word.pos.y+i);
-				}
-				
-				continue;
-				
-			} else {
-				
-				int score = board.getScore();
-				if (score > maxScore)
-					maxScore = score;
-				
-				for (int j = 0; j < aux.length(); j++) {
-					if (j != intersectionIndex) {
-						board.removeCharacter((Character)aux.charAt(j));
-					}
-				}
-				
-				firstDepth(board);
-				
-				// Cortamos no me importa seguir mas
-//				return;
-			}
-		}
-		
-//		board.print();
-		
-	}
-	
 	@Override
 	public void solve() {
 		
@@ -673,61 +575,8 @@ public class LimitedTimeGame extends Game {
 		
 		int oldScore = 0;
 		
-		for (StackBoard board : boards) {
-			
-			// Cant be null. Otherwise dictionary would be empty 
-			String firstWord = board.getDictionary().bestFirstOption(board.getCharacters(), MAX_LENGTH_WORD);
-			
-			if (firstWord == null) {
-				continue;
-			}
-			
-			int x = (board.size()-firstWord.length())/2;
-			int y = board.size()/2;
-			
-			WordXY word = null;
-			
-			AddWordResult result = addWord(x, y, Direction.HORIZONTAL, firstWord, board); 
-			
-			if (!result.success) {
-				
-			} else {
-				
-				if (DEBUG) {
-					List<Character> lj = getAvailableChars(board.characters);
-					System.out.println("("+lj.size()+"): "+lj + " " + board.characters);
-				}
-				
-				for (int j = 0; j < firstWord.length(); j++) {
-					board.removeCharacter((Character)firstWord.charAt(j));
-				}
-				
-				if (DEBUG) {
-					List<Character> lj = getAvailableChars(board.characters);
-					System.out.println("("+lj.size()+"): "+lj + " " + board.characters);
-				}
-				
-//				board.print();
-				
-				firstDepth(board);
-				
-				i++;
-			}
-			
-		}
-		
-		Collections.sort(this.boards, new Comparator<Board>() {
-			@Override
-			public int compare(Board o1, Board o2) {
-				return o2.getScore()-o1.getScore();
-			}
-		});
-		
-		if (ANT && this.params.isVisual())
-			this.boards.get(0).printSimple();
-		
 		if (STOCHASTIC) {
-			hillClimbStochastic(boards.get(0));
+			hillClimbStochastic();
 		} else {
 			hillClimb();
 		}

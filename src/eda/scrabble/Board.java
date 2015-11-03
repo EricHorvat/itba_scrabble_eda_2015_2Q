@@ -5,9 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import eda.scrabble.Game.Coordinate;
 import eda.scrabble.Game.Direction;
-import eda.scrabble.Game.WordXY;
 
 public class Board extends Grid {
 
@@ -15,7 +13,7 @@ public class Board extends Grid {
 	
 	protected Map<Coordinate, Boolean> intersections;
 	protected Map<Character, Integer> characters;
-	private List<WordXY> words = new ArrayList<WordXY>();
+	private List<Word> words = new ArrayList<Word>();
 	
 	
 	public Board(Map<Character, Integer> characters) {
@@ -31,7 +29,7 @@ public class Board extends Grid {
 		this.dictionary = board.dictionary;
 		this.intersections = new HashMap<Coordinate, Boolean>(board.intersections);
 		this.characters = new HashMap<Character, Integer>(board.characters);
-		this.words = new ArrayList<WordXY>(board.words);
+		this.words = new ArrayList<Word>(board.words);
 	}
 
 
@@ -53,14 +51,14 @@ public class Board extends Grid {
 	/**
 	 * @return the _words
 	 */
-	public List<WordXY> getWords() {
+	public List<Word> getWords() {
 		return words;
 	}
 
 	/**
 	 * @param _words the _words to set
 	 */
-	public Board setWords(List<WordXY> words) {
+	public Board setWords(List<Word> words) {
 		this.words = words;
 		return this;
 	}
@@ -86,7 +84,22 @@ public class Board extends Grid {
 		clearIntersection(x, y);
 	}
 	
+	
+	
 	// Aliases
+	
+	public void markIntersection(int x, int y, Direction d, int offset) {
+		if (d == Direction.HORIZONTAL) {
+			markIntersection(x+offset, y);
+		} else {
+			markIntersection(x, y+offset);
+		}
+	}
+	
+	public void markIntersection(Coordinate pos, Direction d, int offset) {
+		markIntersection(pos.x, pos.y, d, offset);
+	}
+	
 	public void markIntersection(int x, int y) {
 		
 		markIntersection(new Coordinate(x, y));
@@ -95,6 +108,18 @@ public class Board extends Grid {
 	public void markIntersection(Coordinate pos) {
 		
 		intersections.put(pos, true);
+	}
+	
+	public void clearIntersection(int x, int y, Direction d, int offset) {
+		if (d == Direction.HORIZONTAL) {
+			clearIntersection(x+offset, y);
+		} else {
+			clearIntersection(x, y+offset);
+		}
+	}
+	
+	public void clearIntersection(Coordinate pos, Direction d, int offset) {
+		clearIntersection(pos.x, pos.y, d, offset);
 	}
 	
 	public void clearIntersection(int x, int y) {
@@ -106,6 +131,8 @@ public class Board extends Grid {
 		
 		intersections.put(pos, false);
 	}
+	
+	
 	
 	public void addCharacter(Character c) {
 		
@@ -154,12 +181,13 @@ public class Board extends Grid {
 		return true;
 	}
 	
-	public void addWord(WordXY word) {
+	public void addWord(Word word) {
 		words.add(word);
 	}
 	
-	public void removeWord(WordXY word) {
+	public Word removeWord(Word word) {
 		words.remove(word);
+		return word;
 	}
 	
 }

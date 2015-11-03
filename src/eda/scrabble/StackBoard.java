@@ -7,15 +7,13 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Map;
 
-import eda.scrabble.Game.WordXY;
-
 /**
  * @author martin
  *
  */
 public class StackBoard extends Board {
 	
-	private Deque<WordXY> wordsStack = new LinkedList<Game.WordXY>();
+	private Deque<Word> wordsStack = new LinkedList<Word>();
 	
 	/**
 	 * @param map
@@ -24,33 +22,38 @@ public class StackBoard extends Board {
 		super(map);
 	}
 
+	public StackBoard(Board board) {
+		super(board);
+	}
+	
 	/**
 	 * @param board
 	 */
-	public StackBoard(Board board) {
+	public StackBoard(StackBoard board) {
 		super(board);
+		this.wordsStack = new LinkedList<Word>(board.wordsStack);
 	}
 
 	/**
 	 * @return the words
 	 */
-	public Deque<WordXY> getWordsStack() {
+	public Deque<Word> getWordsStack() {
 		return this.wordsStack;
 	}
 
 	/**
 	 * @param words the words to set
 	 */
-	public void setWordsStack(Deque<WordXY> words) {
+	public void setWordsStack(Deque<Word> words) {
 		this.wordsStack = words;
 	}
 	
-	public void addWord(WordXY word) {
+	public void addWord(Word word) {
 		this.wordsStack.push(word);
 	}
 	
-	public void removeWord(WordXY word) {
-		this.wordsStack.pop();
+	public Word removeWord(Word word) {
+		return this.wordsStack.pop();
 	}
 
 }

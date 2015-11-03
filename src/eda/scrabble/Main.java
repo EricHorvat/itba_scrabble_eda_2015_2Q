@@ -94,7 +94,7 @@ public class Main {
 		
 		long start = System.nanoTime();
 		
-		if (EXACT_GAME && params.getMaxTime() == 0) {
+		if (params.getMaxTime() == 0) {
 			
 			game = new ExactGame(params);
 		

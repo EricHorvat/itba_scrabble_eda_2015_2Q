@@ -69,124 +69,8 @@ public abstract class Game {
 		
 	}
 	
-	protected static class Coordinate{
-		public int x;
-		public int y;
-
-		public Coordinate(int x, int y) {
-			this.x = x;
-			this.y = y;
-		}
-		
-		@Override
-		public int hashCode() {
-			int result = (int) (Math.pow(2, x) * Math.pow(3, y));
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (getClass() != obj.getClass()) return false;
-			Coordinate other = (Coordinate) obj;
-			if (x != other.x) return false;
-			if (y != other.y) return false;
-			return true;
-		}
-		
-		@Override
-		public String toString() {
-			return "("+x+","+y+")";
-		}
-		
-	}
-	
-	protected static class LetterXY {
-		
-		WordXY word;
-		Character c;
-		int pos;
-		
-		public LetterXY(WordXY word, Character c, int pos) {
-			this.word = word;
-			this.c = c;
-			this.pos = pos;
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if (obj == this) return true;
-			if (!(obj instanceof LetterXY)) return false;
-			LetterXY other = (LetterXY) obj;
-			if (!this.word.equals(other.word)) return false;
-			if (this.pos != other.pos) return false;
-			if (this.c != other.c) return false;
-			return true;
-		}
-		
-		@Override
-		public String toString() {
-			return word.toString()+" " + c + "["+pos+"]";
-		}
-		
-		@Override
-		public int hashCode() {
-			return word.hashCode()+c.hashCode()+pos;
-		}
-	}
-	
-	protected static class WordXY {
-		
-		public String word;
-		public Coordinate pos;
-		public Direction direction;
-		
-		public WordXY(String word, Coordinate pos, Direction d) {
-			this.word = word;
-			this.pos = pos;
-			this.direction = d;
-		}
-		
-		public boolean has(int x, int y) {
-			if (this.direction == Direction.HORIZONTAL) {
-				return this.pos.y == y && this.pos.x <= x && x <= this.pos.x + word.length();
-			} else {
-				return this.pos.x == x && this.pos.y <= y && y <= this.pos.y + word.length();
-			}
-		}
-		
-		public boolean has(Coordinate coord) {
-			return has(coord.x, coord.y);
-		}
-		
-		@Override
-		public String toString() {
-			return word+"("+pos.x+","+pos.y+")"+direction;
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if (obj == this) return true;
-			if (!(obj instanceof WordXY)) return false;
-			WordXY other = (WordXY) obj;
-			if (!this.word.equals(other.word)) return false;
-			if (!this.pos.equals(other.pos)) return false;
-			if (this.direction != other.direction) return false;
-			return true;
-			
-		}
-		
-		@Override
-		public int hashCode() {
-			
-			return pos.hashCode()+word.hashCode()*(direction == Direction.HORIZONTAL ? 1 : -1);
-		}
-		
-	}
-	
 	protected static class AddWordResult {
-		public WordXY word;
+		public Word word;
 		public boolean success;
 		
 		public String msg;
@@ -196,7 +80,7 @@ public abstract class Game {
 			this.msg = msg;
 		}
 		
-		public AddWordResult(WordXY w) {
+		public AddWordResult(Word w) {
 			this.success = true;
 			this.word = w;
 		}
@@ -211,20 +95,18 @@ public abstract class Game {
 	/**
 	 * @deprecated
 	 */
-	protected final static String DICTIONARY_FILENAME = "words2.txt";
+	protected final static String DICTIONARY_FILENAME = "dic2.txt";
 	/**
 	 * @deprecated
 	 */
-	protected final static String LETTERS_FILENAME = "letters2.txt";
-	/**
-	 * @deprecated
-	 */
+	protected final static String LETTERS_FILENAME = "l2.txt";
+	
 	protected final static String CHAR_VALUE_FILENAME = "charValue.txt";
 	
 	protected final static int MAX_LENGTH_WORD = 7;
 	
 	protected final static boolean DEBUG = false;
-	protected final static boolean ANT = false;
+	protected final static boolean ANT = true;
 	
 	public final static Map<Character,Integer> VALUE_MAP = InputData.fillValueMap(CHAR_VALUE_FILENAME);
 	
@@ -237,7 +119,7 @@ public abstract class Game {
 	
 	protected GameParameters params;
 	
-	protected double eta = System.nanoTime()+2*1E9;
+	protected double eta = System.nanoTime()+1*1E9;
 	
 	public Game(GameParameters params) {
 		this.params = params;
@@ -456,7 +338,7 @@ public abstract class Game {
 				break;
 		}
 		
-		WordXY wordXY = new WordXY(word, new Coordinate(x, y), d);
+		Word wordXY = new Word(word, new Coordinate(x, y), d);
 		
 		grid.addWord(wordXY);
 		
@@ -464,17 +346,17 @@ public abstract class Game {
 		
 	}
 	
-	protected WordXY removeWord(WordXY word) {
+	protected Word removeWord(Word word) {
 		return removeWord(word, grid);
 	}
 	
-	protected WordXY removeWord(WordXY word, Board grid) {
-		grid.removeWord(word);
-		removeWordVisually(word, grid);
-		return word;
+	protected Word removeWord(Word word, Board grid) {
+		Word w = grid.removeWord(word);
+		removeWordVisually(w, grid);
+		return w;
 	}
 	
-	private void removeWordVisually(WordXY word, Board grid) {
+	private void removeWordVisually(Word word, Board grid) {
 		if (word.direction == Direction.HORIZONTAL) {
 			for (int i = word.pos.x; i < word.word.length()+word.pos.x; i++) {
 				if (!grid.isOccupied(i, word.pos.y) && word.word.charAt(i - word.pos.x) != Grid.EMPTY_SPACE) {
@@ -486,7 +368,7 @@ public abstract class Game {
 		} else {
 			for (int i = word.pos.y; i < word.word.length()+word.pos.y; i++) {
 				if (!grid.isOccupied(word.pos.x, i) && word.word.charAt(i - word.pos.y) != Grid.EMPTY_SPACE) {
-					if (DEBUG) System.out.println("resetting "+(new Coordinate(word.pos.x, i)));
+					if (DEBUG) System.out.println("resetting "+(new Coordinate(word.pos.x, i)) + " " + word.word.charAt(i - word.pos.y));
 					grid.addCharacter((Character) word.word.charAt(i - word.pos.y));
 					grid.set(word.pos.x, i, Grid.EMPTY_SPACE);
 				}
@@ -496,9 +378,9 @@ public abstract class Game {
 	}
 	
 	
-	protected static void printUsed(List<LetterXY> used) {
+	protected static void printUsed(List<Letter> used) {
 		System.out.print("used: ");
-		for (LetterXY l : used)
+		for (Letter l : used)
 			System.out.print(l.c);
 		System.out.println();
 	}
