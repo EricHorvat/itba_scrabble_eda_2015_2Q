@@ -3,7 +3,6 @@ package eda.scrabble;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,8 +12,7 @@ public class LimitedTimeGame extends Game {
 	
 	private final static double T = 6.5;
 	
-	private final static boolean STOCHASTIC = true;
-	private final static boolean DEBUG = true;
+	private final static boolean STOCHASTIC = false;
 	
 	private StackBoard bestestBoard;
 	
@@ -27,35 +25,6 @@ public class LimitedTimeGame extends Game {
 		
 		board = new StackBoard(grid);
 		dictionaryWords = board.getDictionary().getWords();
-	}
-	
-	/**
-	 * @deprecated
-	 */
-	private void buildUpLetters() {
-		
-		Iterator<Word> it = board.getWordsStack().descendingIterator();
-		while (it.hasNext()) {
-			Word next = it.next();
-			
-			if (next.vec.dir== Direction.HORIZONTAL) {
-				for (int j = next.vec.pos.x; j < next.vec.pos.x+next.word.length(); j++) {
-					
-					if (!board.isIntersection(j, next.vec.pos.y)) {
-						lettersToVisit.add(new Letter(next, (Character)next.word.charAt(j-next.vec.pos.x), j-next.vec.pos.x));
-					}
-				}
-			} else {
-				for (int j = next.vec.pos.y; j < next.vec.pos.y+next.word.length(); j++) {
-					
-					if (!board.isIntersection(next.vec.pos.x, j)) {
-						lettersToVisit.add(new Letter(next, (Character)next.word.charAt(j-next.vec.pos.y), j-next.vec.pos.y));
-					}
-				}
-			}
-			
-		}
-		
 	}
 	
 	private void addRandomWordToBoard() {
@@ -74,17 +43,8 @@ public class LimitedTimeGame extends Game {
 	
 	private void hillClimb() {
 		
-		if (DEBUG) {
-			List<Character> lj = getAvailableChars(board.characters);
-			System.out.println("("+lj.size()+"): "+lj);
-		}
-		
+		// Emepezamos con un tablero al azar
 		addRandomWordToBoard();
-		
-		if (DEBUG) {
-			List<Character> lj = getAvailableChars(board.characters);
-			System.out.println("("+lj.size()+"): "+lj);
-		}
 		
 		StackBoard bestBoard = board;
 		Word wordToAdd = null; 
@@ -109,11 +69,6 @@ public class LimitedTimeGame extends Game {
 			bestBoard.print();
 			
 			for (Letter letter : lettersToVisit) { // Recorro cada una de las letras disponibles
-				
-				if (DEBUG) {
-					List<Character> lj = getAvailableChars(board.characters);
-					System.out.println("("+lj.size()+"): "+lj);
-				}
 				
 				do { // Pruebo con cada palabra que me matchee
 					
@@ -182,27 +137,13 @@ public class LimitedTimeGame extends Game {
 				
 			}
 			
-			System.out.println(localMaxScore + " " + maxScore);
-			
 			if (localMaxScore > maxScore) {
 				maxScore = localMaxScore;
-				System.out.println("nuevo bestest");
 				bestestBoard = new StackBoard(bestBoard);
 			}
 			
-			if (ANT && params.isVisual()) {
+			if (params.isVisual()) {
 				bestBoard.printSimple();
-			}
-			
-			if (DEBUG) {
-				bestBoard.print();
-			}
-			
-//			bestBoard.print();
-			
-			if (DEBUG) {
-				List<Character> lj = getAvailableChars(board.characters);
-				System.out.println("("+lj.size()+"): "+lj);
 			}
 			
 			// Me fijo si me atore
@@ -243,11 +184,6 @@ public class LimitedTimeGame extends Game {
 				
 			}
 			
-			if (DEBUG) {
-				List<Character> lj = getAvailableChars(board.characters);
-				System.out.println("("+lj.size()+"): "+lj + " " + board.characters);
-			}
-			
 		} while( System.nanoTime() < this.eta );
 		
 		
@@ -258,11 +194,6 @@ public class LimitedTimeGame extends Game {
 	
 	private void hillClimbStochastic() {
 		
-		if (DEBUG) {
-			List<Character> llj = getAvailableChars(board.characters);
-			System.out.println("1 ("+llj.size()+"): "+llj);
-		}
-		
 		Deque<List<Letter>> backup = new LinkedList<List<Letter>>();
 		
 		backup.push(new ArrayList<Letter>());
@@ -271,11 +202,6 @@ public class LimitedTimeGame extends Game {
 		// y creamos el array de letras a visitar
 		// tambien consumimos los caracteres utilizados
 		addRandomWordToBoard();
-		
-		if (DEBUG) {
-			List<Character> llj = getAvailableChars(board.characters);
-			System.out.println("2 ("+llj.size()+"): "+llj);
-		}
 		
 //		System.out.println("Hill Climb Stochastic");
 		
@@ -286,8 +212,6 @@ public class LimitedTimeGame extends Game {
 		boolean found = false;
 		
 		do { // Mientras tengamos tiempo
-			
-			if (DEBUG) board.print();
 		
 			bestBoard = board;
 			wordToAdd = null;
@@ -297,11 +221,6 @@ public class LimitedTimeGame extends Game {
 			
 			
 			int initScore = board.getScore();
-			
-			if (DEBUG) {
-				List<Character> lj = getAvailableChars(board.characters);
-				System.out.println("3 ("+lj.size()+"): "+lj);
-			}
 				
 			int intersectionIndex = -1;
 				
@@ -369,9 +288,6 @@ public class LimitedTimeGame extends Game {
 							
 							if ( p > rnd) {
 								
-								if (DEBUG)
-									System.out.println("chosen");
-								
 								// Aca guardamos en bestBoard el tablero que elegimos
 								// estocasticamente para la proxima corrida
 								
@@ -381,33 +297,14 @@ public class LimitedTimeGame extends Game {
 								
 								found = true;
 								
-								if (DEBUG) {
-									List<Character> llj = getAvailableChars(board.characters);
-									System.out.println("4 ("+llj.size()+"): "+llj);
-								}
-								
-								
 								// Con esto nos vamos
 								aux = null;
 								
 							} else {
-							
-								if (DEBUG)
-									System.out.println("not chosen");
-								
-								if (DEBUG) {
-									List<Character> llj = getAvailableChars(board.characters);
-									System.out.println("5 ("+llj.size()+"): "+llj + " " + board.characters);
-								}
 								
 								// Sacamos la palabra que acabamos de agregar
 								// porque no cabia en el tablero
 								removeWord(toAdd, board);
-								
-								if (DEBUG) {
-									List<Character> llj = getAvailableChars(board.characters);
-									System.out.println("6 ("+llj.size()+"): "+llj + " " + board.characters);
-								}
 							
 								board.clearIntersection(letter.word.vec.pos, letter.word.vec.dir, letter.pos);
 								
@@ -426,18 +323,14 @@ public class LimitedTimeGame extends Game {
 			
 			int score = bestBoard.getScore();
 			
-			System.out.println(score);
-			
 			// Si supero el puntaje de mi maximo
 			if (score > maxScore) {
 				bestestBoard = new StackBoard(bestBoard);
 				maxScore = score;
 			}
 			
-			if (ANT && this.params.isVisual())
+			if (this.params.isVisual())
 				bestBoard.printSimple();
-			
-			bestBoard.printSimple();
 			
 			
 			// Si no eligio ninguna palabra
@@ -445,12 +338,9 @@ public class LimitedTimeGame extends Game {
 			// para tener mas posibilidades de agregar otra
 			// y ademas nos alejamos de un maximo local
 			if (wordToAdd == null) {
-				if (DEBUG) {
-					System.out.println("wordToAdd: null");
-					board.print();
-				}
 				
-				Word removed = removeWord(wordToAdd, board);
+//				Word removed = removeWord(wordToAdd, board);
+				removeWord(wordToAdd, board);
 				
 				lettersToVisit = backup.pop();
 				
@@ -470,8 +360,7 @@ public class LimitedTimeGame extends Game {
 				
 				backup.push(new ArrayList<Letter>(lettersToVisit));
 				
-				if (DEBUG) System.out.println("2");
-				if (DEBUG) printUsed(lettersToVisit);
+				
 				for (int j = 0; j < wordToAdd.word.length(); j++) {
 					if (j == intersectionIndex) {
 //						first = true;
@@ -480,7 +369,6 @@ public class LimitedTimeGame extends Game {
 						lettersToVisit.add(new Letter(wordToAdd, (Character)wordToAdd.word.charAt(j), j));
 					}
 				}
-				if (DEBUG) printUsed(lettersToVisit);
 				
 				board = bestBoard;
 			}
@@ -492,17 +380,13 @@ public class LimitedTimeGame extends Game {
 		
 		System.out.println("Max Score: " + bestestBoard.getScore());
 		
-		bestestBoard.print();
-		
-		if (ANT) {
+//		bestestBoard.print();
 			
 			
-			try {
-				board.printSimpleDump(params.outputFileName);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
+		try {
+			board.printSimpleDump(params.outputFileName);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		
 	}
@@ -519,9 +403,6 @@ public class LimitedTimeGame extends Game {
 		} else {
 			hillClimb();
 		}
-		
-//		preHillClimb(boards.get(0), 1);
-				//this.boards.get(best).getDictionary(), this.boards.get(best), this._words.get(best));
 		
 		long end = System.nanoTime() - start; 
 		System.out.println("Run Time: " + end/1000000.0 + "ms");
