@@ -95,17 +95,17 @@ public abstract class Game {
 	/**
 	 * @deprecated
 	 */
-	protected final static String DICTIONARY_FILENAME = "dic2.txt";
+	protected final static String DICTIONARY_FILENAME = "words2.txt";
 	/**
 	 * @deprecated
 	 */
-	protected final static String LETTERS_FILENAME = "l2.txt";
+	protected final static String LETTERS_FILENAME = "letters2.txt";
 	
 	protected final static String CHAR_VALUE_FILENAME = "charValue.txt";
 	
 	protected final static int MAX_LENGTH_WORD = 7;
 	
-	protected final static boolean DEBUG = true;
+	protected final static boolean DEBUG = false;
 	protected final static boolean ANT = false;
 	
 	public final static Map<Character,Integer> VALUE_MAP = InputData.fillValueMap(CHAR_VALUE_FILENAME);
@@ -225,12 +225,12 @@ public abstract class Game {
 					boolean masked = false;
 					
 					if (word.word.charAt(i-word.vec.pos.x) == grid.get(i, word.vec.pos.y)) {
-						mask |= 1 << (i - word.vec.pos.x);
-						masked = true;
+//						mask |= 1 << (i - word.vec.pos.x);
+//						masked = true;
 					}
 					
 					// Chequeamos que no estemos pisando nada
-					if (word.word.charAt(i-word.vec.pos.x) != grid.get(i, word.vec.pos.y) && grid.get(i, word.vec.pos.y) != Grid.EMPTY_SPACE) {
+					if (/*word.word.charAt(i-word.vec.pos.x) != grid.get(i, word.vec.pos.y) && */grid.get(i, word.vec.pos.y) != Grid.EMPTY_SPACE) {
 						if (DEBUG) System.out.println("word horizontal stepping");
 						// Marcamos para eliminar
 						needsRemoval = true;
@@ -271,21 +271,21 @@ public abstract class Game {
 					if (needsRemoval) {
 						if (DEBUG) System.out.print("Returning: ");
 						for (int j = word.vec.pos.x; j < i; j++){
-							if (!grid.isOccupied(j, word.vec.pos.y) && ((mask & (1 << (j - word.vec.pos.x))) == 0 )) {
+							if (!grid.isOccupied(j, word.vec.pos.y)/* && ((mask & (1 << (j - word.vec.pos.x))) == 0 )*/) {
 								grid.set(j, word.vec.pos.y, Grid.EMPTY_SPACE);
 								if (DEBUG) System.out.print(" " + word.word.charAt(j - word.vec.pos.x));
 							}
-							else if ( ((mask & (1 << (j - word.vec.pos.x))) != 0 ) ) {
-								grid.removeCharacter((Character)word.word.charAt(j - word.vec.pos.x));
-							}
+//							else if ( ((mask & (1 << (j - word.vec.pos.x))) != 0 ) ) {
+//								grid.removeCharacter((Character)word.word.charAt(j - word.vec.pos.x));
+//							}
 						}
 						if (DEBUG) System.out.println();
 						return false;
 					}
 					
-					if (masked) {
-						grid.addCharacter((Character)word.word.charAt(i-word.vec.pos.x));
-					}
+//					if (masked) {
+//						grid.addCharacter((Character)word.word.charAt(i-word.vec.pos.x));
+//					}
 					
 					grid.set(i, word.vec.pos.y, word.word.charAt(i-word.vec.pos.x));
 				}
@@ -309,11 +309,11 @@ public abstract class Game {
 					boolean masked = false;
 					
 					if (word.word.charAt(i-word.vec.pos.y) == grid.get(word.vec.pos.x, i)) {
-						mask |= 1 << (i - word.vec.pos.y);
-						masked = true;
+//						mask |= 1 << (i - word.vec.pos.y);
+//						masked = true;
 					}
 					
-					if (word.word.charAt(i-word.vec.pos.y) != grid.get(word.vec.pos.x, i) && grid.get(word.vec.pos.x, i) != Grid.EMPTY_SPACE) {
+					if (/*word.word.charAt(i-word.vec.pos.y) != grid.get(word.vec.pos.x, i) && */grid.get(word.vec.pos.x, i) != Grid.EMPTY_SPACE) {
 						if (DEBUG) System.out.println("word vertical stepping");
 						needsRemoval = true;
 					}
@@ -351,21 +351,21 @@ public abstract class Game {
 					if (needsRemoval) {
 						if (DEBUG) System.out.print("Returning: ");
 						for (int j = word.vec.pos.y; j < i; j++) {
-							if (!grid.isOccupied(word.vec.pos.x, j) && ((mask & (1 << (j - word.vec.pos.y))) == 0 )) {
+							if (!grid.isOccupied(word.vec.pos.x, j)/* && ((mask & (1 << (j - word.vec.pos.y))) == 0 )*/) {
 								grid.set(word.vec.pos.x, j, Grid.EMPTY_SPACE);
 								if (DEBUG) System.out.print(" " + word.word.charAt(j - word.vec.pos.y));
 							}
-							else if ( ((mask & (1 << (j - word.vec.pos.y))) != 0 ) ) {
-								grid.removeCharacter((Character)word.word.charAt(j - word.vec.pos.y));
-							}
+//							else if ( ((mask & (1 << (j - word.vec.pos.y))) != 0 ) ) {
+//								grid.removeCharacter((Character)word.word.charAt(j - word.vec.pos.y));
+//							}
 						}
 						if (DEBUG) System.out.println();
 						return false;
 					}
 					
-					if (masked) {
-						grid.addCharacter((Character)word.word.charAt(i-word.vec.pos.y));
-					}
+//					if (masked) {
+//						grid.addCharacter((Character)word.word.charAt(i-word.vec.pos.y));
+//					}
 					
 					grid.set(word.vec.pos.x, i, word.word.charAt(i-word.vec.pos.y));
 				}
