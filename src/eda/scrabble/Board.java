@@ -181,6 +181,10 @@ public class Board extends Grid {
 		return true;
 	}
 	
+	public boolean canHaveWord(Word word) {
+		return canHaveWord(word.word, word.vec.pos, word.vec.dir);
+	}
+	
 	public void addWord(Word word) {
 		words.add(word);
 	}

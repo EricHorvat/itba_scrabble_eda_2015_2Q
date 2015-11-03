@@ -12,14 +12,51 @@ public class Letter {
 		this.pos = pos;
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((c == null) ? 0 : c.hashCode());
+		result = prime * result + pos;
+		result = prime * result + ((word == null) ? 0 : word.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == this) return true;
-		if (!(obj instanceof Letter)) return false;
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof Letter)) {
+			return false;
+		}
 		Letter other = (Letter) obj;
-		if (!this.word.equals(other.word)) return false;
-		if (this.pos != other.pos) return false;
-		if (this.c != other.c) return false;
+		if (c == null) {
+			if (other.c != null) {
+				return false;
+			}
+		} else if (!c.equals(other.c)) {
+			return false;
+		}
+		if (pos != other.pos) {
+			return false;
+		}
+		if (word == null) {
+			if (other.word != null) {
+				return false;
+			}
+		} else if (!word.equals(other.word)) {
+			return false;
+		}
 		return true;
 	}
 	
@@ -28,9 +65,5 @@ public class Letter {
 		return word.toString()+" " + c + "["+pos+"]";
 	}
 	
-	@Override
-	public int hashCode() {
-		return word.hashCode()+c.hashCode()+pos;
-	}
 
 }

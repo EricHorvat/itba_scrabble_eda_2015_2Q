@@ -5,20 +5,21 @@ import eda.scrabble.Game.Direction;
 public class Word {
 
 	public String word;
-	public Coordinate pos;
-	public Direction direction;
+	public Vector vec;
 	
-	public Word(String word, Coordinate pos, Direction d) {
+	public int intersected;
+	
+	public Word(String word, Vector vec, int intersection) {
 		this.word = word;
-		this.pos = pos;
-		this.direction = d;
+		this.vec = vec;
+		this.intersected = intersection;
 	}
 	
 	public boolean has(int x, int y) {
-		if (this.direction == Direction.HORIZONTAL) {
-			return this.pos.y == y && this.pos.x <= x && x <= this.pos.x + word.length();
+		if (this.vec.dir == Direction.HORIZONTAL) {
+			return this.vec.pos.y == y && this.vec.pos.x <= x && x <= this.vec.pos.x + word.length();
 		} else {
-			return this.pos.x == x && this.pos.y <= y && y <= this.pos.y + word.length();
+			return this.vec.pos.x == x && this.vec.pos.y <= y && y <= this.vec.pos.y + word.length();
 		}
 	}
 	
@@ -28,25 +29,57 @@ public class Word {
 	
 	@Override
 	public String toString() {
-		return word+"("+pos.x+","+pos.y+")"+direction;
+		return word+"("+vec.pos.x+","+vec.pos.y+")"+vec.dir;
 	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == this) return true;
-		if (!(obj instanceof Word)) return false;
-		Word other = (Word) obj;
-		if (!this.word.equals(other.word)) return false;
-		if (!this.pos.equals(other.pos)) return false;
-		if (this.direction != other.direction) return false;
-		return true;
-		
-	}
-	
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
-		
-		return pos.hashCode()+word.hashCode()*(direction == Direction.HORIZONTAL ? 1 : -1);
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + intersected;
+		result = prime * result + ((vec == null) ? 0 : vec.hashCode());
+		result = prime * result + ((word == null) ? 0 : word.hashCode());
+		return result;
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof Word)) {
+			return false;
+		}
+		Word other = (Word) obj;
+		if (intersected != other.intersected) {
+			return false;
+		}
+		if (vec == null) {
+			if (other.vec != null) {
+				return false;
+			}
+		} else if (!vec.equals(other.vec)) {
+			return false;
+		}
+		if (word == null) {
+			if (other.word != null) {
+				return false;
+			}
+		} else if (!word.equals(other.word)) {
+			return false;
+		}
+		return true;
+	}
+	
+	
 
 }

@@ -63,23 +63,26 @@ public class ExactGame extends Game {
 //			while (true) {
 				
 				// Show available chars
-				if (DEBUG) {
-					List<Character> lj = getAvailableChars(grid.characters);
-					System.out.println("("+lj.size()+"/"+numberOfLetters+"/"+(numberOfLetters-lj.size())+"): "+lj + " " + grid.characters);
-					if (grid.getUsed() != (numberOfLetters-lj.size())) {
-						grid.print();
-						return;
-					}
-				}
+//				if (DEBUG) {
+//					List<Character> lj = getAvailableChars(grid.characters);
+//					System.out.println("("+lj.size()+"/"+numberOfLetters+"/"+(numberOfLetters-lj.size())+"): ");
+//					if (grid.getUsed() != (numberOfLetters-lj.size())) {
+//						grid.print();
+//						System.out.println();
+//						System.exit(0);
+//					}
+//				}
 				
 				int u = grid.getUsed();
 				int s = getAvailableChars(grid.characters).size();
 				
 				if (u != (numberOfLetters-s)) {
+					List<Character> lj = getAvailableChars(grid.characters);
+					System.out.println("("+lj.size()+"/"+numberOfLetters+"/"+(numberOfLetters-lj.size())+"): ");
 					grid.print();
 					System.out.println("Early Mismatch");
 					System.out.println("("+s+"/"+numberOfLetters+"/"+(numberOfLetters-s)+"): ");
-					return;
+					System.exit(0);
 				}
 				
 				// SELECT word FROM dictionary WHERE
@@ -94,19 +97,17 @@ public class ExactGame extends Game {
 				// Si encuentra la palabra, me remueve sus caracters de characters
 				aux = grid.getDictionary().bestLimitedOptionAfter(grid.characters, MAX_LENGTH_WORD, currentLetter.c, aux);
 				
-				Coordinate letterIndex2 = currentLetter.word.pos;
+//				Coordinate letterIndex2 = currentLetter.word.vec.pos;
 				
-				if (DEBUG) {
-					if (currentLetter.word.direction == Direction.HORIZONTAL)
-						System.out.println("/SEARCH/"+currentLetter.word.word+"/"+ currentLetter.c + "/"+aux+"("+(letterIndex2.x+currentLetter.pos)+","+(letterIndex2.y)+")");
-					else
-						System.out.println("/SEARCH/"+currentLetter.word.word+"/"+ currentLetter.c + "/"+aux+"("+letterIndex2.x+","+(letterIndex2.y+currentLetter.pos)+")");
-				}
+//				if (DEBUG) {
+//					if (currentLetter.word.vec.dir== Direction.HORIZONTAL)
+//						System.out.println("/SEARCH/"+currentLetter.word.word+"/"+ currentLetter.c + "/"+aux+"("+(letterIndex2.x+currentLetter.pos)+","+(letterIndex2.y)+")");
+//					else
+//						System.out.println("/SEARCH/"+currentLetter.word.word+"/"+ currentLetter.c + "/"+aux+"("+letterIndex2.x+","+(letterIndex2.y+currentLetter.pos)+")");
+//				}
 				
 				// Si aux == null ==> con este caracter no hay mas palabras para buscar
-				if (aux == null) {
-					
-				} else {
+				if (aux != null) {
 				
 				
 					// Hacemos la matematica para que en la grilla se coloque todo prolijo
@@ -118,37 +119,47 @@ public class ExactGame extends Game {
 					// Probamos todas las posiciones posibles de la palabra
 					while (intersectionIndex >= 0) {
 					
-						StringBuilder bugFix = new StringBuilder(aux);
-						bugFix.setCharAt(intersectionIndex, Grid.EMPTY_SPACE);
+//						StringBuilder bugFix = new StringBuilder(aux);
+//						bugFix.setCharAt(intersectionIndex, Grid.EMPTY_SPACE);
 						
 						//letter.word.word.indexOf(letter.c);
 						
 						// Marcamos a la interseccion como lugar ocupado
-						grid.markIntersection(currentLetter.word.pos, currentLetter.word.direction, letterIndex);
+						grid.markIntersection(currentLetter.word.vec.pos, currentLetter.word.vec.dir, letterIndex);
 						
-						// Attempt to add word
-						AddWordResult result;
-						if (currentLetter.word.direction == Direction.HORIZONTAL) {
-							result = addWord(currentLetter.word.pos.x+letterIndex, currentLetter.word.pos.y-intersectionIndex, Direction.VERTICAL, bugFix.toString());
+						if (currentLetter.word.vec.dir == Direction.HORIZONTAL) {
+							
+							toAdd = new Word(aux, new Vector(
+									new Coordinate(
+											currentLetter.word.vec.pos.x+letterIndex,
+											currentLetter.word.vec.pos.y-intersectionIndex),
+									Direction.VERTICAL),
+								intersectionIndex);
+							
 						} else {
-							result = addWord(currentLetter.word.pos.x-intersectionIndex, currentLetter.word.pos.y+letterIndex, Direction.HORIZONTAL, bugFix.toString());
+							
+							toAdd = new Word(aux, new Vector(
+									new Coordinate(
+											currentLetter.word.vec.pos.x-intersectionIndex,
+											currentLetter.word.vec.pos.y+letterIndex),
+									Direction.HORIZONTAL),
+								intersectionIndex);
+							
 						}
 						
-						if (!result.success) {
-							// Reseteamos porque la palabra no se pudo agregar
-							if (DEBUG) System.out.println(aux + " was not added. " + result.msg);
+						if (!addWord(toAdd, grid)) {
 							
-							// Marcamos el lugar que habiamos marcado como ocupado
+						// Marcamos el lugar que habiamos marcado como ocupado
 							// como libre porque no agregamos la palabra
-							grid.clearIntersection(currentLetter.word.pos, currentLetter.word.direction, letterIndex);
+							grid.clearIntersection(currentLetter.word.vec.pos, currentLetter.word.vec.dir, letterIndex);
 							
 							// Seguimos y probamos si la proxima palabra calza en este lugar
 							intersectionIndex = aux.indexOf(currentLetter.c, intersectionIndex+1);
 							
 							continue;
-						} else {
 							
-							toAdd = result.word;
+							
+						} else {
 							
 							// Sacamos a @{letter} de @{used} para que cuando entre en la recursiva
 							// No se ponga a buscar palabras para calzar en la interseccion
@@ -177,9 +188,24 @@ public class ExactGame extends Game {
 							for (int j = 0; j < aux.length(); j++) {
 								Character c = (Character)aux.charAt(j);
 								if (j != intersectionIndex) {
-									if (DEBUG) System.out.print(c + " ");
+									
+									// Consumimos el caracter
 									grid.removeCharacter(c);
-									willVisitLetters.add(new Letter(toAdd, c, j));
+									// Lo ponemos en la lista de a visitar
+									
+									if (toAdd.vec.dir == Direction.HORIZONTAL) {
+										if (grid.get(toAdd.vec.pos.x+j, toAdd.vec.pos.y+1) == Grid.EMPTY_SPACE &&
+												grid.get(toAdd.vec.pos.x+j, toAdd.vec.pos.y-1) == Grid.EMPTY_SPACE) {
+											if (DEBUG) System.out.print(c + " ");
+											willVisitLetters.add(new Letter(toAdd, c, j));
+										}
+									} else {
+										if (grid.get(toAdd.vec.pos.x+1, toAdd.vec.pos.y+j) == Grid.EMPTY_SPACE &&
+												grid.get(toAdd.vec.pos.x-1, toAdd.vec.pos.y+j) == Grid.EMPTY_SPACE) {
+											if (DEBUG) System.out.print(c + " ");
+											willVisitLetters.add(new Letter(toAdd, c, j));
+										}
+									}
 								}
 							}
 							if (DEBUG) System.out.println();
@@ -215,7 +241,7 @@ public class ExactGame extends Game {
 							
 							// Marcamos la interseccion como disponible porque ya que sacamos la palabra
 							// no hay mas interseccion
-							grid.clearIntersection(currentLetter.word.pos, currentLetter.word.direction, letterIndex);
+							grid.clearIntersection(currentLetter.word.vec.pos, currentLetter.word.vec.dir, letterIndex);
 							
 							// Restauramos la informacion para que el proximo ciclo haga su trabajo
 							willVisitLetters.clear();
@@ -224,11 +250,11 @@ public class ExactGame extends Game {
 							
 							if (DEBUG) {
 								System.out.println("After rec call");
-								grid.print();
+//								grid.print();
 							}
 						}
-						
 					}
+						
 				}
 				
 			} while (aux != null);
@@ -301,18 +327,22 @@ public class ExactGame extends Game {
 					return;
 				}
 				
-				// 	Throws Exception but board should be empty
-				AddWordResult result = addWord(i, y, Direction.HORIZONTAL, w);
+				tmp = new Word(w, new Vector(new Coordinate(i, y), Direction.HORIZONTAL), -1);
 				
-				if (!result.success) {
+				addWord(tmp, grid);
+				
+				// 	Throws Exception but board should be empty
+//				AddWordResult result = addWord(i, y, Direction.HORIZONTAL, w);
+				
+//				if (!result.success) {
 					
 					// No llega nunca el tablero esta siempre vacio
-					grid.print();
-					System.out.println(result.msg);
-					return;
-				}
+//					grid.print();
+//					System.out.println(result.msg);
+//					return;
+//				}
 				
-				tmp = result.word;
+//				tmp = result.word;
 				
 				if (DEBUG) System.out.println("Printing initial board");
 				if (DEBUG) grid.print();
@@ -323,7 +353,7 @@ public class ExactGame extends Game {
 					willVisitLetters.add(new Letter(tmp, (Character)w.charAt(j), j));
 				}
 				
-				grid.print();
+//				grid.print();
 				
 //				visitedGrids.clear();
 				
@@ -336,9 +366,9 @@ public class ExactGame extends Game {
 		}
 		
 //		if (DEBUG) System.out.println("Max Score is: " + maxScore);
-		System.out.println("Max Score is: " + maxScore);
-		System.out.println("Max Score is: " + bestGrid.getScore());
-		bestGrid.print();
+//		System.out.println("Max Score is: " + maxScore);
+//		System.out.println("Max Score is: " + bestGrid.getScore());
+		bestGrid.printSimple();
 //		}
 //		try {
 //			bestGrid.printSimpleDump(params.outputFileName);
