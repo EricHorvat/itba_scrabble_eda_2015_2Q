@@ -1,0 +1,7 @@
+auto
+casa
+tabla
+pelo
+libro
+monitor
+queso
