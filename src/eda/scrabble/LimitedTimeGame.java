@@ -91,6 +91,8 @@ public class LimitedTimeGame extends Game {
 			
 			int localMaxScore = board.getScore();
 			
+			bestBoard = board;
+			
 			bestLetter = null;
 			wordToAdd = null;
 			
@@ -140,6 +142,12 @@ public class LimitedTimeGame extends Game {
 						} else {
 							int score = board.getScore();
 							
+							for (int k = 0; k < aux.length(); k++) {
+								if (k != intersectionIndex) {
+									board.removeCharacter((Character)aux.charAt(k));
+								}
+							}
+							
 							if (score > localMaxScore) {
 								localMaxScore = score;
 								bestBoard = new StackBoard(board);
@@ -147,7 +155,7 @@ public class LimitedTimeGame extends Game {
 								bestLetter = letter;
 							}
 							
-							// Sacamos la palabra que acabamos de agregar y empezamos de cero
+							// Sacamos la palabra que acabamos de agregar
 							removeWord(addWord, board);
 							
 							board.clearIntersection(letter.word.vec.pos, letter.word.vec.dir, letter.pos);
