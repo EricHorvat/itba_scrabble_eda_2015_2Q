@@ -1,4 +1,4 @@
-fattily
+﻿fattily
 soldo
 cheetah
 pavin
@@ -140,7 +140,6 @@ liker
 roost
 shoer
 asgard
-s￥ﾽance
 sexed
 creeper
 hermann
@@ -226,7 +225,6 @@ cabble
 airhead
 thoric
 calmier
-eug￥ﾽne
 ecowas
 nosing
 blaming
@@ -935,7 +933,6 @@ kisser
 emprize
 dyer
 henlike
-bid￥
 rerent
 imbalm
 skeigh
@@ -991,7 +988,6 @@ adonia
 yasht
 spicule
 aubade
-ain''t
 caball
 wulfila
 urease
