@@ -95,11 +95,11 @@ public abstract class Game {
 	/**
 	 * @deprecated
 	 */
-	protected final static String DICTIONARY_FILENAME = "words2.txt";
+	protected final static String DICTIONARY_FILENAME = "dic10.txt";
 	/**
 	 * @deprecated
 	 */
-	protected final static String LETTERS_FILENAME = "letters2.txt";
+	protected final static String LETTERS_FILENAME = "l6.txt";
 	
 	protected final static String CHAR_VALUE_FILENAME = "charValue.txt";
 	
@@ -119,7 +119,7 @@ public abstract class Game {
 	
 	protected GameParameters params;
 	
-	protected double eta = System.nanoTime()+1*1E9;
+	protected double eta = System.nanoTime()+5*1E9;
 	
 	public Game(GameParameters params) {
 		this.params = params;

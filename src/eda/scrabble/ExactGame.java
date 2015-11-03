@@ -353,7 +353,7 @@ public class ExactGame extends Game {
 					willVisitLetters.add(new Letter(tmp, (Character)w.charAt(j), j));
 				}
 				
-				grid.print();
+//				grid.print();
 				
 //				visitedGrids.clear();
 				

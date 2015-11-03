@@ -13,7 +13,7 @@ public class LimitedTimeGame extends Game {
 	
 	private final static double T = 6.5;
 	
-	private final static boolean STOCHASTIC = false;
+	private final static boolean STOCHASTIC = true;
 	private final static boolean DEBUG = true;
 	
 	private StackBoard bestestBoard;
@@ -74,7 +74,17 @@ public class LimitedTimeGame extends Game {
 	
 	private void hillClimb() {
 		
+		if (DEBUG) {
+			List<Character> lj = getAvailableChars(board.characters);
+			System.out.println("("+lj.size()+"): "+lj);
+		}
+		
 		addRandomWordToBoard();
+		
+		if (DEBUG) {
+			List<Character> lj = getAvailableChars(board.characters);
+			System.out.println("("+lj.size()+"): "+lj);
+		}
 		
 		StackBoard bestBoard = board;
 		Word wordToAdd = null; 
@@ -99,6 +109,11 @@ public class LimitedTimeGame extends Game {
 			bestBoard.print();
 			
 			for (Letter letter : lettersToVisit) { // Recorro cada una de las letras disponibles
+				
+				if (DEBUG) {
+					List<Character> lj = getAvailableChars(board.characters);
+					System.out.println("("+lj.size()+"): "+lj);
+				}
 				
 				do { // Pruebo con cada palabra que me matchee
 					
@@ -142,6 +157,7 @@ public class LimitedTimeGame extends Game {
 						} else {
 							int score = board.getScore();
 							
+							// Consumimos los caracteres
 							for (int k = 0; k < aux.length(); k++) {
 								if (k != intersectionIndex) {
 									board.removeCharacter((Character)aux.charAt(k));
@@ -156,6 +172,7 @@ public class LimitedTimeGame extends Game {
 							}
 							
 							// Sacamos la palabra que acabamos de agregar
+							// Devolvemos los caracteres
 							removeWord(addWord, board);
 							
 							board.clearIntersection(letter.word.vec.pos, letter.word.vec.dir, letter.pos);
@@ -185,7 +202,7 @@ public class LimitedTimeGame extends Game {
 			
 			if (DEBUG) {
 				List<Character> lj = getAvailableChars(board.characters);
-				System.out.println("("+lj.size()+"): "+lj + " " + board.characters);
+				System.out.println("("+lj.size()+"): "+lj);
 			}
 			
 			// Me fijo si me atore
@@ -203,12 +220,13 @@ public class LimitedTimeGame extends Game {
 					if (i == intersectionIndex) {
 						lettersToVisit.remove(bestLetter);
 					} else {
-						board.removeCharacter((Character)wordToAdd.word.charAt(i));
+//						board.removeCharacter((Character)wordToAdd.word.charAt(i));
 						lettersToVisit.add(new Letter(wordToAdd, (Character)wordToAdd.word.charAt(i), i));
 					}
 				}
 				
 			} else {
+				
 				
 				
 				// Maximo local
@@ -233,12 +251,17 @@ public class LimitedTimeGame extends Game {
 		} while( System.nanoTime() < this.eta );
 		
 		
-		System.out.println("bestest");
+		System.out.println("bestest " + bestestBoard.getScore());
 		bestestBoard.print();
 		
 	}
 	
 	private void hillClimbStochastic() {
+		
+		if (DEBUG) {
+			List<Character> llj = getAvailableChars(board.characters);
+			System.out.println("1 ("+llj.size()+"): "+llj);
+		}
 		
 		Deque<List<Letter>> backup = new LinkedList<List<Letter>>();
 		
@@ -248,6 +271,11 @@ public class LimitedTimeGame extends Game {
 		// y creamos el array de letras a visitar
 		// tambien consumimos los caracteres utilizados
 		addRandomWordToBoard();
+		
+		if (DEBUG) {
+			List<Character> llj = getAvailableChars(board.characters);
+			System.out.println("2 ("+llj.size()+"): "+llj);
+		}
 		
 //		System.out.println("Hill Climb Stochastic");
 		
@@ -265,14 +293,14 @@ public class LimitedTimeGame extends Game {
 			wordToAdd = null;
 			bestLetter = null;
 			aux = null;
+			found = false;
+			
 			
 			int initScore = board.getScore();
 			
-			found = false;
-			
 			if (DEBUG) {
 				List<Character> lj = getAvailableChars(board.characters);
-				System.out.println("("+lj.size()+"): "+lj + " " + board.characters);
+				System.out.println("3 ("+lj.size()+"): "+lj);
 			}
 				
 			int intersectionIndex = -1;
@@ -302,7 +330,7 @@ public class LimitedTimeGame extends Game {
 									new Vector(
 											new Coordinate(
 													letter.word.vec.pos.x+letter.pos,
-													letter.word.vec.pos.x-intersectionIndex),
+													letter.word.vec.pos.y-intersectionIndex),
 											Direction.VERTICAL),
 									intersectionIndex);
 						} else {
@@ -311,7 +339,7 @@ public class LimitedTimeGame extends Game {
 									new Vector(
 											new Coordinate(
 													letter.word.vec.pos.x-intersectionIndex,
-													letter.word.vec.pos.x+letter.pos),
+													letter.word.vec.pos.y+letter.pos),
 											Direction.HORIZONTAL),
 									intersectionIndex);
 						}
@@ -332,6 +360,13 @@ public class LimitedTimeGame extends Game {
 							double p = 1 / ( 1 + Math.pow(Math.E, (initScore - score) / T ) );
 							
 							double rnd = Math.random();
+							
+							for (int k = 0; k < aux.length(); k++) {
+								if (k != intersectionIndex) {
+									board.removeCharacter((Character)aux.charAt(k));
+								}
+							}
+							
 							if ( p > rnd) {
 								
 								if (DEBUG)
@@ -348,19 +383,7 @@ public class LimitedTimeGame extends Game {
 								
 								if (DEBUG) {
 									List<Character> llj = getAvailableChars(board.characters);
-									System.out.println("("+llj.size()+"): "+llj + " " + board.characters);
-								}
-								
-								for (int k = 0; k < aux.length(); k++) {
-									if (k != intersectionIndex) {
-										bestBoard.removeCharacter((Character)aux.charAt(k));
-										board.removeCharacter((Character)aux.charAt(k));
-									}
-								}
-								
-								if (DEBUG) {
-									List<Character> llj = getAvailableChars(board.characters);
-									System.out.println("("+llj.size()+"): "+llj + " " + board.characters);
+									System.out.println("4 ("+llj.size()+"): "+llj);
 								}
 								
 								
@@ -374,7 +397,7 @@ public class LimitedTimeGame extends Game {
 								
 								if (DEBUG) {
 									List<Character> llj = getAvailableChars(board.characters);
-									System.out.println("("+llj.size()+"): "+llj + " " + board.characters);
+									System.out.println("5 ("+llj.size()+"): "+llj + " " + board.characters);
 								}
 								
 								// Sacamos la palabra que acabamos de agregar
@@ -383,7 +406,7 @@ public class LimitedTimeGame extends Game {
 								
 								if (DEBUG) {
 									List<Character> llj = getAvailableChars(board.characters);
-									System.out.println("("+llj.size()+"): "+llj + " " + board.characters);
+									System.out.println("6 ("+llj.size()+"): "+llj + " " + board.characters);
 								}
 							
 								board.clearIntersection(letter.word.vec.pos, letter.word.vec.dir, letter.pos);
@@ -431,7 +454,7 @@ public class LimitedTimeGame extends Game {
 				
 				lettersToVisit = backup.pop();
 				
-				if (!board.getWordsStack().isEmpty()) {
+				if (board.getWordsStack().isEmpty()) {
 					// Si no hay mas palabras me tira una excepcion
 					
 					addRandomWordToBoard();
