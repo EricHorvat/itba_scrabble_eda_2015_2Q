@@ -3,9 +3,11 @@ package eda.scrabble;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class ExactGame extends Game {
 	
@@ -15,6 +17,8 @@ public class ExactGame extends Game {
 	
 	Map<Integer, Boolean> visitedGrids;
 	
+	Set<Board> visitedBoards;
+	
 	int n = 0;
 	
 	public ExactGame(GameParameters params) {
@@ -22,6 +26,8 @@ public class ExactGame extends Game {
 		
 		
 		visitedGrids = new HashMap<Integer, Boolean>();
+		
+		visitedBoards = new HashSet<Board>();
 	}
 	
 	private void exactSolution(List<Letter> willVisitLetters, int score) {
@@ -137,9 +143,9 @@ public class ExactGame extends Game {
 							}
 							 
 							// Mostramos el tablero
-							if (params.isVisual()) {
-								grid.printSimple();
-							}
+//							if (params.isVisual()) {
+//								grid.printSimple();
+//							}
 							
 							// Agregamos los caracteres que en la recursiva se van a usar para buscar
 							// mas palabras
@@ -240,17 +246,19 @@ public class ExactGame extends Game {
 		
 		int score;
 		
+		int ig = 1;
+		
 		for (String w : allWords) {
 			
 			int x = grid.size()/2-w.length()+1;
 			int y = grid.size()/2;
 			
 			// Probamos todas las posiciones posibles en el eje x
-			for (int i = x; i <= grid.size()/2; i++) {
+//			for (int i = x; i <= grid.size()/2; i++) {
 				
 				cleanBoard();
 				
-				tmp = new Word(w, new Vector(new Coordinate(i, y), Direction.HORIZONTAL), -1);
+				tmp = new Word(w, new Vector(new Coordinate(x, y), Direction.HORIZONTAL), -1);
 				
 				addWord(tmp, grid);
 				
@@ -268,21 +276,23 @@ public class ExactGame extends Game {
 					willVisitLetters.add(new Letter(tmp, (Character)w.charAt(j), j));
 				}
 				
-				if (params.isVisual()) {
+				System.out.println(ig+"/"+allWords.size());
+				
+//				if (params.isVisual()) {
 					grid.printSimple();
-				}
+//				}
 				
 				exactSolution(willVisitLetters, 0);
 				
 				
 				willVisitLetters.clear();
-			}
-			
+//			}
+			ig++;
 		}
 		
 //		if (DEBUG) System.out.println("Max Score is: " + maxScore);
-//		System.out.println("Max Score is: " + maxScore);
-//		System.out.println("Max Score is: " + bestGrid.getScore());
+		System.out.println("Max Score is: " + maxScore);
+		System.out.println("Max Score is: " + bestGrid.getScore());
 //		bestGrid.printSimple();
 //		}
 		try {

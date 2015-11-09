@@ -63,30 +63,10 @@ public class Board extends Grid {
 		return this;
 	}
 	
-	public boolean isOccupied(int x, int y) {
+	public boolean isIntersection(int x, int y) {
 		Boolean b = intersections.get(new Coordinate(x,y));
 		return b != null && b == true;
 	}
-	
-	public boolean isIntersection(int x, int y) {
-		return isOccupied(x, y);
-	}
-	
-	public void markOccupied(int x, int y) {
-		if (DEBUG) System.out.println("Mark Ocuppied ("+x+","+y+")");
-		
-		markIntersection(x, y);
-	}
-	
-	public void markAvailable(int x, int y) {
-		if (DEBUG) System.out.println("Mark Available ("+x+","+y+")");
-		
-		clearIntersection(x, y);
-	}
-	
-	
-	
-	// Aliases
 	
 	public void markIntersection(int x, int y, Direction d, int offset) {
 		if (d == Direction.HORIZONTAL) {

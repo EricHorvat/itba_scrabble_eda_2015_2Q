@@ -11,7 +11,8 @@ public class Test {
 
 	@org.junit.Test
 	public void test() {
-		String s[] = {"Dict1.txt", "Let1.txt", "OutTest.txt", "-maxtime", "0.0010"}; 
+		// Entrada de ant
+		String s[] = {"Dict1.txt", "Let1.txt", "OutTest.txt", "-maxtime", "5"}; 
 		testGame(STOCHASTIC,s);		
 	}
 

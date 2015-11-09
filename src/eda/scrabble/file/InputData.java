@@ -71,9 +71,8 @@ public class InputData{
 	private static boolean containsAll(String s, Map<Character, Integer> chars) {
 		
 		for (char c : s.toCharArray()) {
-			if (chars.get((Character)c) <= 0) {
-				if (DEBUG)
-					System.out.println(c +" is not in chars: " + Game.getAvailableChars(chars));
+			Integer times= chars.get((Character)c);
+			if (times == null || times <= 0) {
 				return false;
 			}
 		}
@@ -81,6 +80,7 @@ public class InputData{
 	}
 	
 	public static Dictionary fillDictionary(String filename, DictionaryFillStrategy strategy, Map<Character, Integer> characters) {
+		
 		Map<Character, Integer> popularMap = new HashMap<Character, Integer>();
 		
 		for (char c = 'A';c <= 'Z';c++)
@@ -104,7 +104,6 @@ public class InputData{
 				String word = it.next().toUpperCase();
 				if (!(2 <= word.length() && word.length() <= 7 && containsAll(word, characters))) {
 					it.remove();
-					if (DEBUG) System.out.println("Removing " + word + " from collection");
 				}
 			}
 			
@@ -129,8 +128,6 @@ public class InputData{
 						}
 					}
 				} else {
-					if (DEBUG)
-						System.out.println("Removing " + word + " from collection");
 					it.remove();
 				}
 				
@@ -141,14 +138,11 @@ public class InputData{
 		
 		if (DEBUG) {
 			System.out.println("Trimmed to " + words.size() + " words");
-			System.out.println(words);
 		}
 		
 		for (String word : words) {
 			dict.add(word.toUpperCase());
 		}
-		
-		if (DEBUG) System.out.println(dict);
 		
 		return dict;
 	}

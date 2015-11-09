@@ -95,12 +95,14 @@ public abstract class Game {
 		this.params = params;
 		Map<Character, Integer> map = new HashMap<Character, Integer>();
 		Dictionary dictionary = null;
-		map = InputData.getGameChars(params.lettersFileName);
+//		map = InputData.getGameChars(params.lettersFileName);
+		map = InputData.getGameChars("_tiles1.txt");
 		dictionary = InputData.fillDictionary(
-				params.dictionaryFileName,
+//				params.dictionaryFileName,
+				"_dictionary.txt",
 				InputData.DictionaryFillStrategy.HIGHEST_VALUE,
 				map);
-		if (params.getMaxTime() > 0) {
+		if (false && params.getMaxTime() > 0) {
 			this.eta = System.nanoTime()+params.getMaxTime()*1E9;
 		}
 		grid = new Board(map);
@@ -169,7 +171,7 @@ public abstract class Game {
 			for (int i = word.vec.pos.x; i < word.vec.pos.x+word.word.length(); i++) {
 				if (i - word.vec.pos.x != word.intersected) { 
 				
-					boolean occupied = grid.isOccupied(i, word.vec.pos.y);
+					boolean occupied = grid.isIntersection(i, word.vec.pos.y);
 					boolean needsRemoval = false;
 					
 					boolean masked = false;
@@ -218,7 +220,7 @@ public abstract class Game {
 					
 					if (needsRemoval) {
 						for (int j = word.vec.pos.x; j < i; j++){
-							if (!grid.isOccupied(j, word.vec.pos.y)/* && ((mask & (1 << (j - word.vec.pos.x))) == 0 )*/) {
+							if (!grid.isIntersection(j, word.vec.pos.y)/* && ((mask & (1 << (j - word.vec.pos.x))) == 0 )*/) {
 								grid.set(j, word.vec.pos.y, Grid.EMPTY_SPACE);
 							}
 //							else if ( ((mask & (1 << (j - word.vec.pos.x))) != 0 ) ) {
@@ -246,7 +248,7 @@ public abstract class Game {
 			int mask = 0;
 			for (int i = word.vec.pos.y; i < word.vec.pos.y+word.word.length(); i++) {
 				if (i - word.vec.pos.y != word.intersected) {
-					boolean isOccupied = grid.isOccupied(word.vec.pos.x, i);
+					boolean isOccupied = grid.isIntersection(word.vec.pos.x, i);
 					boolean needsRemoval = false;
 					
 					boolean masked = false;
@@ -290,7 +292,7 @@ public abstract class Game {
 					
 					if (needsRemoval) {
 						for (int j = word.vec.pos.y; j < i; j++) {
-							if (!grid.isOccupied(word.vec.pos.x, j)/* && ((mask & (1 << (j - word.vec.pos.y))) == 0 )*/) {
+							if (!grid.isIntersection(word.vec.pos.x, j)/* && ((mask & (1 << (j - word.vec.pos.y))) == 0 )*/) {
 								grid.set(word.vec.pos.x, j, Grid.EMPTY_SPACE);
 							}
 //							else if ( ((mask & (1 << (j - word.vec.pos.y))) != 0 ) ) {
@@ -327,7 +329,7 @@ public abstract class Game {
 	private void removeWordVisually(Word word, Board grid) {
 		if (word.vec.dir == Direction.HORIZONTAL) {
 			for (int i = word.vec.pos.x; i < word.word.length()+word.vec.pos.x; i++) {
-				if (i - word.vec.pos.x != word.intersected && !grid.isOccupied(i, word.vec.pos.y)) {
+				if (i - word.vec.pos.x != word.intersected && !grid.isIntersection(i, word.vec.pos.y)) {
 					
 					if (grid.get(i, word.vec.pos.y+1) == Grid.EMPTY_SPACE && grid.get(i, word.vec.pos.y-1) == Grid.EMPTY_SPACE) {
 						
@@ -338,7 +340,7 @@ public abstract class Game {
 			}
 		} else {
 			for (int i = word.vec.pos.y; i < word.word.length()+word.vec.pos.y; i++) {
-				if (i - word.vec.pos.y != word.intersected && !grid.isOccupied(word.vec.pos.x, i)) {
+				if (i - word.vec.pos.y != word.intersected && !grid.isIntersection(word.vec.pos.x, i)) {
 					
 					if (grid.get(word.vec.pos.x+1, i) == Grid.EMPTY_SPACE && grid.get(word.vec.pos.x-1, i) == Grid.EMPTY_SPACE) {
 						grid.addCharacter((Character) word.word.charAt(i - word.vec.pos.y));
