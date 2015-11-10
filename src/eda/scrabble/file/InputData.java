@@ -9,13 +9,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.sun.xml.internal.ws.util.StringUtils;
+import eda.scrabble.game.Game;
+import eda.scrabble.storage.Dictionary;
 
-import eda.scrabble.Dictionary;
-import eda.scrabble.Game;
-
+/**
+ * Clase dedicada a la carga de los archivos y preprocesamiento
+ * @author martin
+ *
+ */
 public class InputData{
 	
+	/**
+	 * Ordenamientos posibles del diccionario
+	 * @author martin
+	 *
+	 */
 	public enum DictionaryFillStrategy {
 		NONE,
 		HIGHEST_OCURRENCY,
@@ -29,6 +37,11 @@ public class InputData{
 		
 	}
 	
+	/**
+	 * Lee y crea una lista con todas las lineas de un archivo
+	 * @param filename
+	 * @return
+	 */
 	public static List<String> readAllLines(String filename) {
 		
 		List<String> lines = new ArrayList<String>();
@@ -53,6 +66,11 @@ public class InputData{
 		return lines;
 	}
 
+	/**
+	 * Carga los valores de las letras
+	 * @param filename
+	 * @return
+	 */
 	public static HashMap<Character, Integer> fillValueMap(String filename) {
 		
 		HashMap<Character, Integer> hMap = new HashMap<Character, Integer>();
@@ -69,6 +87,12 @@ public class InputData{
 		return hMap;
 	}
 	
+	/**
+	 * Cuenta cuantas veces aparece c en s
+	 * @param s
+	 * @param c
+	 * @return
+	 */
 	private static int countOccurencesOf(String s, char c) {
 		int r = 0;
 		for (int i = 0; i < s.length(); i++) {
@@ -79,6 +103,12 @@ public class InputData{
 		return r;
 	}
 
+	/**
+	 * Valida que el String s se pueda armar con chars
+	 * @param s
+	 * @param chars
+	 * @return
+	 */
 	private static boolean containsAll(String s, Map<Character, Integer> chars) {
 		
 		for (char c : s.toCharArray()) {
@@ -90,6 +120,13 @@ public class InputData{
 		return true;
 	}
 	
+	/**
+	 * Crea el diccionario de acuerdo a la estrategia strategy
+	 * @param filename
+	 * @param strategy
+	 * @param characters
+	 * @return
+	 */
 	public static Dictionary fillDictionary(String filename, DictionaryFillStrategy strategy, Map<Character, Integer> characters) {
 		
 		Map<Character, Integer> popularMap = new HashMap<Character, Integer>();
@@ -106,7 +143,7 @@ public class InputData{
 		
 		if (strategy == DictionaryFillStrategy.HIGHEST_VALUE || strategy == DictionaryFillStrategy.LOWEST_VALUE) {
 			
-			dict = new Dictionary(strategy, Game.VALUE_MAP);
+			dict = new Dictionary(strategy, Game.CHARACTER_VALUES);
 			
 			while (it.hasNext()) {
 				String word = it.next().toUpperCase();
@@ -166,6 +203,11 @@ public class InputData{
 		return dict;
 	}
 
+	/**
+	 * Carga los caracteres disponibles
+	 * @param filename
+	 * @return
+	 */
 	public static Map<Character, Integer> getGameChars(String filename){
 
 		Map<Character, Integer> map = new HashMap<Character, Integer>();

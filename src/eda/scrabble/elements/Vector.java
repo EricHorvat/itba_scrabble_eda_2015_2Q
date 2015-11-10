@@ -1,11 +1,9 @@
-package eda.scrabble;
-
-import eda.scrabble.Game.Direction;
+package eda.scrabble.elements;
 
 public class Vector {
 
-	public Coordinate pos;
-	public Direction dir;
+	private Coordinate pos;
+	private Direction dir;
 	
 	public Vector(Coordinate pos, Direction dir) {
 		this.pos = pos;
@@ -50,6 +48,22 @@ public class Vector {
 			return false;
 		}
 		return true;
+	}
+
+	public Coordinate getPosition() {
+		return pos;
+	}
+
+	public void setPosition(Coordinate pos) {
+		this.pos = pos;
+	}
+
+	public Direction getDirection() {
+		return dir;
+	}
+
+	public void setDirection(Direction dir) {
+		this.dir = dir;
 	}
 	
 	

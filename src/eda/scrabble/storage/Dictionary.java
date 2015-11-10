@@ -1,32 +1,35 @@
-package eda.scrabble;
+package eda.scrabble.storage;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import eda.scrabble.file.InputData.DictionaryFillStrategy;
 
-public class Dictionary extends Trie {
+public class Dictionary {
 
 	private static final int MIN_LENGTH_ALLOWED = 2;
 	private static final int MAX_LENGTH_ALLOWED = 7;
 	
 	private DictionaryFillStrategy kind;
 	
+	private Trie wordRepository;
+	
 	public DictionaryFillStrategy getDictionaryFillStrategy() {
 		return this.kind;
 	}
 	
 	public Dictionary(DictionaryFillStrategy kind, Map<Character, Integer> map) {
-		super(map);
+//		super(map);
 		this.kind = kind;
+		this.wordRepository = new Trie(map);
+		
 	}
 	
 	public void add(String word) {
 		if (word != null)
 			if (word.length() >= MIN_LENGTH_ALLOWED && word.length() <= MAX_LENGTH_ALLOWED)
-				super.add(word);
+				wordRepository.add(word);
 	}
 
 
@@ -85,9 +88,9 @@ public class Dictionary extends Trie {
 		
 		String best = null;
 		for( int i =0; i < maxLength && best == null; i++){	
-			best = bestOption(manipulableChars, 0, maxLength, searchedChar, i, prevWord, this);	
+			best = wordRepository.bestOption(manipulableChars, 0, maxLength, searchedChar, i, prevWord, wordRepository);	
 			while (best != null && searchedChar != null && !best.contains(searchedChar.toString())) {
-				best = bestOption(manipulableChars, 0, maxLength, searchedChar, i, best, this);
+				best = wordRepository.bestOption(manipulableChars, 0, maxLength, searchedChar, i, best, wordRepository);
 			}
 		}
 		
@@ -98,6 +101,14 @@ public class Dictionary extends Trie {
 	@Override
 	public String toString() {
 		return super.toString();
+	}
+	
+	public boolean contains(String s) {
+		return wordRepository.contains(s);
+	}
+	
+	public List<String> getWords() {
+		return wordRepository.getWords();
 	}
 	
 }

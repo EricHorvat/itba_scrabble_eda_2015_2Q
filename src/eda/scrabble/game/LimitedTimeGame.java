@@ -1,4 +1,4 @@
-package eda.scrabble;
+package eda.scrabble.game;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,14 +6,23 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 
+import eda.scrabble.boards.logic.Grid;
+import eda.scrabble.boards.logic.StackBoard;
+import eda.scrabble.boards.visual.BoardDrawer;
+import eda.scrabble.elements.Coordinate;
+import eda.scrabble.elements.Direction;
+import eda.scrabble.elements.Letter;
+import eda.scrabble.elements.Vector;
+import eda.scrabble.elements.Word;
+
 public class LimitedTimeGame extends Game {
 
 	private StackBoard board;
 	
+	/**
+	 * Constante T obtenida empiricamente
+	 */
 	private final static double T = 6.5;
-	
-	// Es publico para los tests
-	public static boolean STOCHASTIC = false;
 	
 	private StackBoard bestestBoard;
 	
@@ -26,22 +35,30 @@ public class LimitedTimeGame extends Game {
 		
 		board = new StackBoard(grid);
 		dictionaryWords = board.getDictionary().getWords();
+		bestestBoard = new StackBoard(grid);
 	}
 	
+	/**
+	 * Agrega una palabra aleatoria del diccionario al tablero
+	 */
 	private void addRandomWordToBoard() {
-	// Empezamos con una palabra aleatoria
+		// Buscamos una palabra aleatoria
 		String randomWord = dictionaryWords.get( ((int)(Math.random() * 1000)) % dictionaryWords.size() );
-		Word w = new Word(randomWord, new Vector(new Coordinate((board.size()-randomWord.length())/2, board.size()/2), Direction.HORIZONTAL), -1);
 		
-		addWord(w, board);
+		// La colocamos en el tablero
+		Word w = new Word(randomWord, new Vector(new Coordinate((board.size()-randomWord.length())/2, board.size()/2), Direction.HORIZONTAL), -1);
+		BoardDrawer.getCurrentBoardDrawer().addWord(w, board);
 		
 		lettersToVisit.clear();
-		for (int j = 0; j < w.word.length(); j++) {
-			board.removeCharacter((Character)w.word.charAt(j));
-			lettersToVisit.add(new Letter(w, (Character)w.word.charAt(j), j));
+		for (int j = 0; j < w.getWord().length(); j++) {
+			board.removeCharacter((Character)w.getWord().charAt(j));
+			lettersToVisit.add(new Letter(w, (Character)w.getWord().charAt(j), j));
 		}
 	}
 	
+	/**
+	 * Implementacion del Hill Climber (normal)
+	 */
 	private void hillClimb() {
 		
 		// Emepezamos con un tablero al azar
@@ -75,40 +92,40 @@ public class LimitedTimeGame extends Game {
 					
 					
 					// Busco la palabra correspondiente en mi diccionario
-					aux = board.getDictionary().bestLimitedOptionAfter(board.getCharacters(), MAX_LENGTH_WORD, letter.c, aux);
+					aux = board.getDictionary().bestLimitedOptionAfter(board.getAvailableCharacters(), MAX_LENGTH_WORD, letter.getCharacter(), aux);
 					
 					if ( aux != null) {
 						
 						// Agregar la palabra
-						int intersectionIndex = aux.indexOf(letter.c);
+						int intersectionIndex = aux.indexOf(letter.getCharacter());
 						
-						board.markIntersection(letter.word.vec.pos, letter.word.vec.dir, letter.pos);
+						board.markIntersection(letter.getWord().getVector().getPosition(), letter.getWord().getVector().getDirection(), letter.getPosition());
 						
 						Word addWord;
 						
-						if (letter.word.vec.dir == Direction.HORIZONTAL) {
+						if (letter.getWord().getVector().getDirection().isHorizontal()) {
 							
 							addWord = new Word(aux,
 									new Vector(
 											new Coordinate(
-													letter.word.vec.pos.x+letter.pos,
-													letter.word.vec.pos.y-intersectionIndex),
-											Direction.VERTICAL),
+													letter.getWord().getVector().getPosition().getX()+letter.getPosition(),
+													letter.getWord().getVector().getPosition().getY()-intersectionIndex),
+													letter.getWord().getVector().getDirection().getOpposite()),
 									intersectionIndex);
 						} else {
 							
 							addWord = new Word(aux,
 									new Vector(
 											new Coordinate(
-													letter.word.vec.pos.x-intersectionIndex,
-													letter.word.vec.pos.y+letter.pos),
-											Direction.HORIZONTAL),
+													letter.getWord().getVector().getPosition().getX()-intersectionIndex,
+													letter.getWord().getVector().getPosition().getY()+letter.getPosition()),
+													letter.getWord().getVector().getDirection().getOpposite()),
 									intersectionIndex);
 						}
 						
-						if (!addWord(addWord, board)) {
+						if (!BoardDrawer.getCurrentBoardDrawer().addWord(addWord, board)) {
 							
-							board.clearIntersection(letter.word.vec.pos, letter.word.vec.dir, letter.pos);
+							board.clearIntersection(letter.getWord().getVector().getPosition(), letter.getWord().getVector().getDirection(), letter.getPosition());
 							
 						} else {
 							int score = board.getScore();
@@ -120,6 +137,8 @@ public class LimitedTimeGame extends Game {
 								}
 							}
 							
+							
+							// Actualizamos
 							if (score > localMaxScore) {
 								localMaxScore = score;
 								bestBoard = new StackBoard(board);
@@ -129,22 +148,23 @@ public class LimitedTimeGame extends Game {
 							
 							// Sacamos la palabra que acabamos de agregar
 							// Devolvemos los caracteres
-							removeWord(addWord, board);
+							BoardDrawer.getCurrentBoardDrawer().removeWord(addWord, board);
 							
-							board.clearIntersection(letter.word.vec.pos, letter.word.vec.dir, letter.pos);
+							board.clearIntersection(letter.getWord().getVector().getPosition(), letter.getWord().getVector().getDirection(), letter.getPosition());
 						}
 					}
 				} while (aux != null);
 				
 			}
 			
+			// Actualizamos
 			if (localMaxScore > maxScore) {
 				maxScore = localMaxScore;
 				bestestBoard = new StackBoard(bestBoard);
 			}
 			
 			if (params.isVisual()) {
-				bestBoard.printSimple();
+				BoardDrawer.getCurrentBoardDrawer().printUnstyled(bestBoard);
 			}
 			
 			// Me fijo si me atore
@@ -155,15 +175,13 @@ public class LimitedTimeGame extends Game {
 				board = bestBoard;
 				
 				// Actualizo letters y characters, y sigo
+				int intersectionIndex = wordToAdd.getIntersectedIndex();
 				
-				int intersectionIndex = wordToAdd.intersected;
-				
-				for (int i = 0; i < wordToAdd.word.length(); i++) {
+				for (int i = 0; i < wordToAdd.getWord().length(); i++) {
 					if (i == intersectionIndex) {
 						lettersToVisit.remove(bestLetter);
 					} else {
-//						board.removeCharacter((Character)wordToAdd.word.charAt(i));
-						lettersToVisit.add(new Letter(wordToAdd, (Character)wordToAdd.word.charAt(i), i));
+						lettersToVisit.add(new Letter(wordToAdd, (Character)wordToAdd.getWord().charAt(i), i));
 					}
 				}
 				
@@ -176,9 +194,9 @@ public class LimitedTimeGame extends Game {
 				while (!board.getWordsStack().isEmpty()) {
 					Word removing = board.getWordsStack().peek(); 
 					
-					removeWord(removing, board);
+					BoardDrawer.getCurrentBoardDrawer().removeWord(removing, board);
 					
-					board.clearIntersection(removing.vec.pos, removing.vec.dir, removing.intersected);
+					board.clearIntersection(removing.getVector().getPosition(), removing.getVector().getDirection(), removing.getIntersectedIndex());
 				}
 				
 				addRandomWordToBoard();
@@ -187,16 +205,22 @@ public class LimitedTimeGame extends Game {
 			
 		} while( System.nanoTime() < this.eta );
 		
+		if (params.isVisual()) {
+			BoardDrawer.getCurrentBoardDrawer().printUnstyled(bestestBoard);
+			System.out.println("Max. Score: " + bestestBoard.getScore());
+		}
 		
-//		System.out.println("bestest " + bestestBoard.getScore());
 		try {
-			board.printSimpleDump(params.outputFileName);
+			BoardDrawer.getCurrentBoardDrawer().printUnstyledDump(bestestBoard, params.outputFileName);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 	}
 	
+	/**
+	 * Implementacion del Hill Climber estocastico
+	 */
 	private void hillClimbStochastic() {
 		
 		Deque<List<Letter>> backup = new LinkedList<List<Letter>>();
@@ -234,7 +258,7 @@ public class LimitedTimeGame extends Game {
 				do { // Probamos todas las palabras que se pueden agregar en esa letra
 					
 					// obtenemos esa palabra
-					aux = board.getDictionary().bestLimitedOptionAfter(board.getCharacters(), MAX_LENGTH_WORD, letter.c, aux);
+					aux = board.getDictionary().bestLimitedOptionAfter(board.getAvailableCharacters(), MAX_LENGTH_WORD, letter.getCharacter(), aux);
 					
 //					if (DEBUG) System.out.println("/SEARCH/"+letter.word.word+"/"+letter.c+"/"+aux);
 					
@@ -243,35 +267,35 @@ public class LimitedTimeGame extends Game {
 					
 						Word toAdd;
 						
-						intersectionIndex = aux.indexOf(letter.c);
+						intersectionIndex = aux.indexOf(letter.getCharacter());
 						
-						board.markIntersection(letter.word.vec.pos, letter.word.vec.dir, letter.pos);
+						board.markIntersection(letter.getWord().getVector().getPosition(), letter.getWord().getVector().getDirection(), letter.getPosition());
 						
 						// La agreguamos
-						if (letter.word.vec.dir == Direction.HORIZONTAL) {
+						if (letter.getWord().getVector().getDirection().isHorizontal()) {
 							
 							toAdd = new Word(aux,
 									new Vector(
 											new Coordinate(
-													letter.word.vec.pos.x+letter.pos,
-													letter.word.vec.pos.y-intersectionIndex),
-											Direction.VERTICAL),
+													letter.getWord().getVector().getPosition().getX()+letter.getPosition(),
+													letter.getWord().getVector().getPosition().getY()-intersectionIndex),
+													letter.getWord().getVector().getDirection().getOpposite()),
 									intersectionIndex);
 						} else {
 							
 							toAdd = new Word(aux,
 									new Vector(
 											new Coordinate(
-													letter.word.vec.pos.x-intersectionIndex,
-													letter.word.vec.pos.y+letter.pos),
-											Direction.HORIZONTAL),
+													letter.getWord().getVector().getPosition().getX()-intersectionIndex,
+													letter.getWord().getVector().getPosition().getY()+letter.getPosition()),
+													letter.getWord().getVector().getDirection().getOpposite()),
 									intersectionIndex);
 						}
 						
 						// Si Fallo el agregado
-						if (!addWord(toAdd, board)) {
+						if (!BoardDrawer.getCurrentBoardDrawer().addWord(toAdd, board)) {
 							
-							board.clearIntersection(letter.word.vec.pos, letter.word.vec.dir, letter.pos);
+							board.clearIntersection(letter.getWord().getVector().getPosition(), letter.getWord().getVector().getDirection(), letter.getPosition());
 							
 							// Seguimos a buscar la proxima palabra que se pueda colocar en esta posicion
 							continue;
@@ -309,9 +333,9 @@ public class LimitedTimeGame extends Game {
 								
 								// Sacamos la palabra que acabamos de agregar
 								// porque no cabia en el tablero
-								removeWord(toAdd, board);
+								BoardDrawer.getCurrentBoardDrawer().removeWord(toAdd, board);
 							
-								board.clearIntersection(letter.word.vec.pos, letter.word.vec.dir, letter.pos);
+								board.clearIntersection(letter.getWord().getVector().getPosition(), letter.getWord().getVector().getDirection(), letter.getPosition());
 								
 							}
 						}
@@ -335,7 +359,8 @@ public class LimitedTimeGame extends Game {
 			}
 			
 			if (this.params.isVisual()) {
-				bestBoard.printSimple();
+				BoardDrawer.getCurrentBoardDrawer().printUnstyled(bestBoard);
+//				bestBoard.printSimple();
 			}
 			
 			
@@ -346,7 +371,7 @@ public class LimitedTimeGame extends Game {
 			if (wordToAdd == null) {
 				
 //				Word removed = removeWord(wordToAdd, board);
-				removeWord(wordToAdd, board);
+				BoardDrawer.getCurrentBoardDrawer().removeWord(wordToAdd, board);
 				
 				lettersToVisit = backup.pop();
 				
@@ -367,12 +392,12 @@ public class LimitedTimeGame extends Game {
 				backup.push(new ArrayList<Letter>(lettersToVisit));
 				
 				
-				for (int j = 0; j < wordToAdd.word.length(); j++) {
+				for (int j = 0; j < wordToAdd.getWord().length(); j++) {
 					if (j == intersectionIndex) {
 //						first = true;
 						lettersToVisit.remove(bestLetter);
 					} else {
-						lettersToVisit.add(new Letter(wordToAdd, (Character)wordToAdd.word.charAt(j), j));
+						lettersToVisit.add(new Letter(wordToAdd, (Character)wordToAdd.getWord().charAt(j), j));
 					}
 				}
 				
@@ -380,38 +405,35 @@ public class LimitedTimeGame extends Game {
 			}
 			
 			
-//			hillClimbStochastic(bestBoard, letters);
-			
 		} while ( System.nanoTime() < this.eta );
 		
-//		System.out.println("Max Score: " + bestestBoard.getScore());
+		if (params.isVisual()) {
+			BoardDrawer.getCurrentBoardDrawer().printStyled(bestestBoard);
+			System.out.println("Max. Score: " + bestestBoard.getScore());
+		}
 		
-//		bestestBoard.print();
-			
-			
 		try {
-			board.printSimpleDump(params.outputFileName);
+			BoardDrawer.getCurrentBoardDrawer().printStyledDump(bestestBoard, params.outputFileName);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 	}
 	
+	/**
+	 * Implementacion del metodo pedido por Game
+	 * Es el punto de comienzo del algoritmo aproximado
+	 */
 	@Override
 	public void solve() {
 		
-//		long start = System.nanoTime();
-		
 		maxScore = 0;
 		
-		if (STOCHASTIC) {
+		if (params.isStochastic()) {
 			hillClimbStochastic();
 		} else {
 			hillClimb();
 		}
-		
-//		long end = System.nanoTime() - start; 
-//		System.out.println("Run Time: " + end/1000000.0 + "ms");
 		
 	}
 

@@ -1,10 +1,21 @@
-package eda.scrabble;
+package eda.scrabble.elements;
 
+/**
+ * Representacion de una letra en el tablero
+ * Esta pertenece a una palabra.
+ * Esta asociada a un caracter.
+ * Y cuenta con su posicion en la palabra
+ * 
+ * Se utiliza para acumular las letras donde se pueden
+ * insertar palabras
+ * @author martin
+ *
+ */
 public class Letter {
 
-	Word word;
-	Character c;
-	int pos;
+	private Word word;
+	private Character c;
+	private int pos;
 	
 	public Letter(Word word, Character c, int pos) {
 		this.word = word;
@@ -64,6 +75,32 @@ public class Letter {
 	public String toString() {
 		return word.toString()+" " + c + "["+pos+"]";
 	}
+
+	public Word getWord() {
+		return word;
+	}
+
+	public void setWord(Word word) {
+		this.word = word;
+	}
+
+	public Character getCharacter() {
+		return c;
+	}
+
+	public void setCharacter(Character c) {
+		this.c = c;
+	}
+
+	public int getPosition() {
+		return pos;
+	}
+
+	public void setPosition(int pos) {
+		this.pos = pos;
+	}
+	
+	
 	
 
 }

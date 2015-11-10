@@ -1,6 +1,9 @@
 package eda.scrabble;
 
-import eda.scrabble.Game.GameParameters;
+import eda.scrabble.game.ExactGame;
+import eda.scrabble.game.Game;
+import eda.scrabble.game.LimitedTimeGame;
+import eda.scrabble.game.Game.GameParameters;
 
 public class Main {
 	
@@ -49,12 +52,20 @@ public class Main {
 						
 						params.setMaxTime(Double.parseDouble(args[5]));
 						
+						if (args[6].trim().equals("-stochastic")) {
+							params.setStochastic(true);
+						}
+						
 					}
 					
 				}				
 				else if (args[3].trim().equals("-maxtime")) {
 					
 					params.setMaxTime(Float.parseFloat(args[4]));
+					
+					if (args[5].trim().equals("-stochastic")) {
+						params.setStochastic(true);
+					}
 					
 				}
 				

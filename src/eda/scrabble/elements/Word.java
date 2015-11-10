@@ -1,13 +1,28 @@
-package eda.scrabble;
+package eda.scrabble.elements;
 
-import eda.scrabble.Game.Direction;
-
+/**
+ * Representacion de una palabra en el tablero.
+ * Cuenta con la palabra a representar, junto con
+ * un Vector que nos indicar su ubicacio
+ *  y direccion
+ * @author martin
+ *
+ */
 public class Word {
 
-	public String word;
-	public Vector vec;
+	/**
+	 * La palabra que estamos tratando
+	 */
+	private String word;
+	/**
+	 * La posicion y direccion de la palabra
+	 */
+	private Vector vec;
 	
-	public int intersected;
+	/**
+	 * El indice en el cual se engancho esta palabra
+	 */
+	private int intersected;
 	
 	public Word(String word, Vector vec, int intersection) {
 		this.word = word;
@@ -15,21 +30,9 @@ public class Word {
 		this.intersected = intersection;
 	}
 	
-	public boolean has(int x, int y) {
-		if (this.vec.dir == Direction.HORIZONTAL) {
-			return this.vec.pos.y == y && this.vec.pos.x <= x && x <= this.vec.pos.x + word.length();
-		} else {
-			return this.vec.pos.x == x && this.vec.pos.y <= y && y <= this.vec.pos.y + word.length();
-		}
-	}
-	
-	public boolean has(Coordinate coord) {
-		return has(coord.x, coord.y);
-	}
-	
 	@Override
 	public String toString() {
-		return word+"("+vec.pos.x+","+vec.pos.y+")"+vec.dir;
+		return word+vec.getPosition().toString()+vec.getDirection();
 	}
 
 	/* (non-Javadoc)
@@ -78,6 +81,30 @@ public class Word {
 			return false;
 		}
 		return true;
+	}
+
+	public String getWord() {
+		return word;
+	}
+
+	public void setWord(String word) {
+		this.word = word;
+	}
+
+	public Vector getVector() {
+		return vec;
+	}
+
+	public void setVector(Vector vec) {
+		this.vec = vec;
+	}
+
+	public int getIntersectedIndex() {
+		return intersected;
+	}
+
+	public void setIntersectedIndex(int intersected) {
+		this.intersected = intersected;
 	}
 	
 	

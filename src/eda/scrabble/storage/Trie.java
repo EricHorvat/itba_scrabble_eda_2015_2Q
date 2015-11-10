@@ -1,4 +1,4 @@
-package eda.scrabble;
+package eda.scrabble.storage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +84,6 @@ public class Trie {
 	}
 	
 	private Node first = null;
-	private Map<Character, Integer> hierarchy;
 
 	public Trie() {
 		
@@ -213,7 +212,7 @@ public class Trie {
 	 * @param trie Trie en el que se busca
 	 * @return
 	 */
-	String bestOption(
+	public String bestOption(
 			Map<Character, Integer> manipulableChars,
 			int currentIndex,/*(Eric v8) Esto sirve para decir cuando va(n) la(s) ficha(s) fija(s), solo falta ver si las pasamos por listas o arrays, etc*/
 			int maxLength, /*(Eric v8) Serviria para no buscar de mas, se pueden poner 7 fichas*/
