@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 
 public class ExactGame extends Game {
 	
@@ -16,6 +17,8 @@ public class ExactGame extends Game {
 	int numberOfLetters;
 	
 	Map<Integer, Boolean> visitedGrids;
+	
+	Set<String> visitedString;
 	
 	Set<Board> visitedBoards;
 	
@@ -28,6 +31,8 @@ public class ExactGame extends Game {
 		visitedGrids = new HashMap<Integer, Boolean>();
 		
 		visitedBoards = new HashSet<Board>();
+		
+		visitedString = new HashSet<String>();
 	}
 	
 	private int exactSolution(List<Letter> willVisitLetters, int score) {
@@ -45,13 +50,20 @@ public class ExactGame extends Game {
 		
 		// Signinfica que no me quedan mas letras
 		// Podamos
-		if (sum == 0)
-			return -1;
+		if (sum == 0) {
+			return 1;
+		}
+		
+		
+		if (sum+score <= maxScore) {
+			return 2;
+		}
 		
 		// Backup used letters for restauration later
-		List<Letter> backup = new ArrayList<Letter>(grid.size()*grid.size());
-		for (Letter l : willVisitLetters)
+		List<Letter> backup = new ArrayList<Letter>(80);
+		for (Letter l : willVisitLetters) {
 			backup.add(l);
+		}
 		
 		// Loop through @{used}. It contains the letters that will be analyzed
 		// Basically Letters\IntersectedLetters
@@ -89,6 +101,8 @@ public class ExactGame extends Game {
 					// Probamos todas las posiciones posibles de la palabra
 					while (intersectionIndex >= 0) {
 					
+//						Board nextBoard = new Board(board);
+						
 						
 						// Marcamos a la interseccion como lugar ocupado
 						grid.markIntersection(currentLetter.word.vec.pos, currentLetter.word.vec.dir, letterIndex);
@@ -129,6 +143,8 @@ public class ExactGame extends Game {
 							
 						} else {
 							
+							
+							
 							// Sacamos a @{letter} de @{used} para que cuando entre en la recursiva
 							// No se ponga a buscar palabras para calzar en la interseccion
 							willVisitLetters.remove(currentLetter);
@@ -146,6 +162,8 @@ public class ExactGame extends Game {
 //							if (params.isVisual()) {
 //								grid.printSimple();
 //							}
+							
+//							grid.printSimple();
 							
 							// Agregamos los caracteres que en la recursiva se van a usar para buscar
 							// mas palabras
@@ -171,25 +189,25 @@ public class ExactGame extends Game {
 								}
 							}
 							
-							int hc = grid.hashCode();
-							Boolean visited = visitedGrids.get(hc);
-							
-							if (visited == null || visited == false) {
-								
-								// Marcamos el tablero como visitado
-								visitedGrids.put(hc, true);
+//							Board boardCopy = new Board(grid);
+//							if (!visitedBoards.contains(boardCopy)) {
+//								visitedBoards.add(boardCopy);
 								
 								// Perform recursive call to same method
-								int exitCode = exactSolution(willVisitLetters, score);
-								if (exitCode == -1) {
-									return -1;
-								}
-							} else {
-								
-//								grid.print();
-								
-							}
+//								int exitCode = exactSolution(willVisitLetters, score);
+//								if (exitCode == 1) {
+//									return 1;
+//								}
+//							}
 							
+							if (!visitedString.contains(grid.toString())) {
+								visitedString.add(grid.toString());
+								
+								int exitCode = exactSolution(willVisitLetters, score);
+								if (exitCode == 1) {
+									return 1;
+								}
+							}
 							
 							
 							/*
@@ -209,8 +227,9 @@ public class ExactGame extends Game {
 							
 							// Restauramos la informacion para que el proximo ciclo haga su trabajo
 							willVisitLetters.clear();
-							for (Letter l: backup)
+							for (Letter l: backup) {
 								willVisitLetters.add(l);
+							}
 						}
 					}
 						
@@ -226,8 +245,14 @@ public class ExactGame extends Game {
 	
 	private void cleanBoard() {
 	// Clean board
-		while (grid.getWords().size() > 0) { 
+		while (grid.getWords().size() > 0) {
+			Word willBeRemovedWord = grid.getWords().get(grid.getWords().size()-1);
 			removeWord(grid.getWords().get(grid.getWords().size()-1));
+			if (willBeRemovedWord.vec.dir == Direction.HORIZONTAL) {
+				grid.clearIntersection(willBeRemovedWord.vec.pos.x+willBeRemovedWord.intersected, willBeRemovedWord.vec.pos.y);
+			} else {
+				grid.clearIntersection(willBeRemovedWord.vec.pos.x, willBeRemovedWord.vec.pos.y+willBeRemovedWord.intersected);
+			}
 		}
 	}
 	
@@ -245,7 +270,7 @@ public class ExactGame extends Game {
 		List<String> allWords = grid.getDictionary().getWords();
 		
 		// Reservo a lo sumo grid.size()^2 de letras
-		List<Letter> willVisitLetters = new ArrayList<Letter>(grid.size()*grid.size());
+		List<Letter> willVisitLetters = new ArrayList<Letter>(80);
 		
 		Word tmp = null;
 		
@@ -264,6 +289,8 @@ public class ExactGame extends Game {
 			for (int i = x; i <= grid.size()/2; i++) {
 				
 				cleanBoard();
+				
+//				Board initialBoard = new Board(grid);
 				
 				tmp = new Word(w, new Vector(new Coordinate(i, y), Direction.HORIZONTAL), -1);
 				
@@ -285,6 +312,7 @@ public class ExactGame extends Game {
 				
 				System.out.println( ((System.nanoTime()-start)/1E9)+"s" );
 				System.out.println(ig+"/"+allWords.size());
+				System.out.println("best: " + bestGrid.getScore());
 				
 //				if (params.isVisual()) {
 					grid.printSimple();

@@ -4,8 +4,6 @@ import eda.scrabble.Game.GameParameters;
 
 public class Main {
 	
-	public static final boolean EXACT_GAME = true;
-	
 	// Para testeo es public
 	public static GameParameters parseParameters(String[] args) {
 		
@@ -84,7 +82,7 @@ public class Main {
 //			return;
 		}
 		
-		if (EXACT_GAME || params.getMaxTime() == 0) {
+		if (params.getMaxTime() == 0) {
 			
 			game = new ExactGame(params);
 		

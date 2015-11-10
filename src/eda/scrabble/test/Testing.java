@@ -1,4 +1,4 @@
-package eda.scrabble;
+package eda.scrabble.test;
 
 import static org.junit.Assert.*;
 

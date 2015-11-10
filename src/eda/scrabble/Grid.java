@@ -146,12 +146,35 @@ public class Grid {
 			}
 			bufferedWriter.newLine();
 		}
-		
+		bufferedWriter.write("Max. Score: " + getScore());
 		bufferedWriter.close();
 	}
 	
 	public int size() {
 		return GRID_SIZE;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof Word)) {
+			return false;
+		}
+		Grid other = (Grid) obj;
+		StringBuilder sb1 = new StringBuilder();
+		StringBuilder sb2 = new StringBuilder();
+		for (int i = 0; i < GRID_SIZE; i++) {
+			for (int j = 0; j < GRID_SIZE; j++) {
+				sb1.append(grid[i][j]);
+				sb2.append(other.grid[i][j]);
+			}
+		}
+		return sb1.toString().equals(sb2.toString());
 	}
 	
 	@Override
@@ -229,6 +252,17 @@ public class Grid {
 			}
 		}
 		return r;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb1 = new StringBuilder();
+		for (int i = 0; i < GRID_SIZE; i++) {
+			for (int j = 0; j < GRID_SIZE; j++) {
+				sb1.append(grid[i][j]);
+			}
+		}
+		return sb1.toString();
 	}
 	
 }

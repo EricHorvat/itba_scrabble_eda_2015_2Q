@@ -16,14 +16,13 @@ import eda.scrabble.Game;
 
 public class InputData{
 	
-	private final static boolean DEBUG = false;
-	
 	public enum DictionaryFillStrategy {
 		NONE,
 		HIGHEST_OCURRENCY,
 		LOWEST_OCURRENCY,
 		HIGHEST_VALUE,
-		LOWEST_VALUE
+		LOWEST_VALUE,
+		ALPHABETIC
 	};
 	
 	private InputData() {
@@ -101,10 +100,7 @@ public class InputData{
 		
 		List<String> words = readAllLines(filename);
 		
-		if (DEBUG)
-			System.out.println("Got " + words.size() + " words");
-		
-		Dictionary dict;
+		Dictionary dict = null;
 		
 		Iterator<String> it = words.iterator();
 		
@@ -119,7 +115,9 @@ public class InputData{
 				}
 			}
 			
-		} else {
+		} else if ( strategy == DictionaryFillStrategy.NONE ||
+								strategy == DictionaryFillStrategy.LOWEST_OCURRENCY ||
+								strategy == DictionaryFillStrategy.HIGHEST_OCURRENCY) {
 			
 			while (it.hasNext()) {
 				String word = it.next().toUpperCase();
@@ -146,10 +144,19 @@ public class InputData{
 			}
 			
 			dict = new Dictionary(strategy, popularMap);
-		}
-		
-		if (DEBUG) {
-			System.out.println("Trimmed to " + words.size() + " words");
+		} else {
+			
+			for (char c = 'A';c <= 'Z';c++)
+				popularMap.put(c, -(int)c);
+			
+			dict = new Dictionary(strategy, popularMap);
+			
+			while (it.hasNext()) {
+				String word = it.next().toUpperCase();
+				if (!(2 <= word.length() && word.length() <= 7 && containsAll(word, characters))) {
+					it.remove();
+				}
+			}
 		}
 		
 		for (String word : words) {

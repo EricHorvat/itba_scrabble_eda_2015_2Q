@@ -95,14 +95,14 @@ public abstract class Game {
 		this.params = params;
 		Map<Character, Integer> map = new HashMap<Character, Integer>();
 		Dictionary dictionary = null;
-//		map = InputData.getGameChars(params.lettersFileName);
-		map = InputData.getGameChars("_tiles4.txt");
+		map = InputData.getGameChars(params.lettersFileName);
+//		map = InputData.getGameChars("letters2.txt");
 		dictionary = InputData.fillDictionary(
-//				params.dictionaryFileName,
-				"_dictionary.txt",
-				InputData.DictionaryFillStrategy.HIGHEST_VALUE,
+				params.dictionaryFileName,
+//				"words2.txt",
+				InputData.DictionaryFillStrategy.HIGHEST_OCURRENCY,
 				map);
-		if (false && params.getMaxTime() > 0) {
+		if (params.getMaxTime() > 0) {
 			this.eta = System.nanoTime()+params.getMaxTime()*1E9;
 		}
 		grid = new Board(map);
@@ -184,6 +184,7 @@ public abstract class Game {
 					// Chequeamos que no estemos pisando nada
 					if (/*word.word.charAt(i-word.vec.pos.x) != grid.get(i, word.vec.pos.y) && */grid.get(i, word.vec.pos.y) != Grid.EMPTY_SPACE) {
 						// Marcamos para eliminar
+//						return false;
 						needsRemoval = true;
 					}
 					
@@ -198,6 +199,7 @@ public abstract class Game {
 						// verificamos que este en el diccionario
 						if (!grid.getDictionary().contains(reverse(s))) {
 							// Marcamos para eliminar
+//							return false;
 							needsRemoval = true;
 						}
 					}
@@ -212,7 +214,7 @@ public abstract class Game {
 						// verificamos que este en el diccionario
 						if (!grid.getDictionary().contains(s)) {
 							// Marcamos para eliminar
-
+//							return false;
 							needsRemoval = true;
 						}
 					}
@@ -259,6 +261,7 @@ public abstract class Game {
 					}
 					
 					if (/*word.word.charAt(i-word.vec.pos.y) != grid.get(word.vec.pos.x, i) && */grid.get(word.vec.pos.x, i) != Grid.EMPTY_SPACE) {
+//						return false;
 						needsRemoval = true;
 					}
 					
@@ -272,6 +275,7 @@ public abstract class Game {
 						}
 						if (!grid.getDictionary().contains(s)) {
 							// Sacar del tablero lo que quedo
+//							return false;
 							needsRemoval = true;
 						}
 					}
@@ -285,6 +289,7 @@ public abstract class Game {
 							j++;
 						}
 						if (!grid.getDictionary().contains(reverse(s))) {
+//							return false;
 							needsRemoval = true;
 						}
 					}
@@ -357,8 +362,8 @@ public abstract class Game {
 	
 	public void start() {
 		
-		solve();
 		
+		solve();
 	}
 	
 

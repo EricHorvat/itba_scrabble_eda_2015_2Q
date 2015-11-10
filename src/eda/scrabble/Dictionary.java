@@ -77,8 +77,6 @@ public class Dictionary extends Trie {
 			String prevWord
 			)
 	{
-//		List<Character> lj = Game.getAvailableChars(availableChars);
-//		System.out.println("("+lj.size()+"): "+lj + " " + availableChars);
 		Map<Character, Integer> manipulableChars = new HashMap<Character, Integer>(availableChars);
 		
 		if (searchedChar != null) {
@@ -92,24 +90,8 @@ public class Dictionary extends Trie {
 				best = bestOption(manipulableChars, 0, maxLength, searchedChar, i, best, this);
 			}
 		}
-//		while (manipulableChars.get(END_CHAR) > 0) {
-//			availableChars.put(END_CHAR, availableChars.get((Character)END_CHAR) - 1);
-//		}
-//		lj = Game.getAvailableChars(availableChars);
-//		System.out.println("("+lj.size()+"): "+lj + " " + availableChars);
-//		if (best != null) {
-//			for (int i = 0; i < best.length(); i++) {
-//				System.out.println("removing: " + best.ch);
-//				availableChars.put((Character)best.charAt(i), availableChars.get((Character)best.charAt(i)) - 1);
-//			}
-//			if (searchedChar != null) {
-//				availableChars.put(searchedChar, availableChars.get(searchedChar) + 1);
-//			}
-//		} else {
-//			availableChars.put(searchedChar, availableChars.get(searchedChar) - 1);
-//		}
-//		lj = Game.getAvailableChars(availableChars);
-//		System.out.println("("+lj.size()+"): "+lj + " " + availableChars);
+		
+		manipulableChars = null;
 		return best;
 	}
 	
