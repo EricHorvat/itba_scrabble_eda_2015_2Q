@@ -30,7 +30,7 @@ public class ExactGame extends Game {
 		visitedBoards = new HashSet<Board>();
 	}
 	
-	private void exactSolution(List<Letter> willVisitLetters, int score) {
+	private int exactSolution(List<Letter> willVisitLetters, int score) {
 		
 		String aux = null;
 		Word toAdd = null;
@@ -46,7 +46,7 @@ public class ExactGame extends Game {
 		// Signinfica que no me quedan mas letras
 		// Podamos
 		if (sum == 0)
-			return;
+			return -1;
 		
 		// Backup used letters for restauration later
 		List<Letter> backup = new ArrayList<Letter>(grid.size()*grid.size());
@@ -180,7 +180,10 @@ public class ExactGame extends Game {
 								visitedGrids.put(hc, true);
 								
 								// Perform recursive call to same method
-								exactSolution(willVisitLetters, score);
+								int exitCode = exactSolution(willVisitLetters, score);
+								if (exitCode == -1) {
+									return -1;
+								}
 							} else {
 								
 //								grid.print();
@@ -217,6 +220,8 @@ public class ExactGame extends Game {
 			
 		}
 		
+		return 0;
+		
 	}
 	
 	private void cleanBoard() {
@@ -248,17 +253,19 @@ public class ExactGame extends Game {
 		
 		int ig = 1;
 		
+		long start = System.nanoTime();
+		
 		for (String w : allWords) {
 			
 			int x = grid.size()/2-w.length()+1;
 			int y = grid.size()/2;
 			
 			// Probamos todas las posiciones posibles en el eje x
-//			for (int i = x; i <= grid.size()/2; i++) {
+			for (int i = x; i <= grid.size()/2; i++) {
 				
 				cleanBoard();
 				
-				tmp = new Word(w, new Vector(new Coordinate(x, y), Direction.HORIZONTAL), -1);
+				tmp = new Word(w, new Vector(new Coordinate(i, y), Direction.HORIZONTAL), -1);
 				
 				addWord(tmp, grid);
 				
@@ -276,6 +283,7 @@ public class ExactGame extends Game {
 					willVisitLetters.add(new Letter(tmp, (Character)w.charAt(j), j));
 				}
 				
+				System.out.println( ((System.nanoTime()-start)/1E9)+"s" );
 				System.out.println(ig+"/"+allWords.size());
 				
 //				if (params.isVisual()) {
@@ -286,17 +294,18 @@ public class ExactGame extends Game {
 				
 				
 				willVisitLetters.clear();
-//			}
+			}
 			ig++;
 		}
 		
 //		if (DEBUG) System.out.println("Max Score is: " + maxScore);
 		System.out.println("Max Score is: " + maxScore);
 		System.out.println("Max Score is: " + bestGrid.getScore());
-//		bestGrid.printSimple();
+		bestGrid.printSimple();
 //		}
 		try {
-			bestGrid.printSimpleDump(params.outputFileName);
+//			bestGrid.printSimpleDump(params.outputFileName);
+			bestGrid.printSimpleDump("out.txt");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

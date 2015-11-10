@@ -96,7 +96,7 @@ public abstract class Game {
 		Map<Character, Integer> map = new HashMap<Character, Integer>();
 		Dictionary dictionary = null;
 //		map = InputData.getGameChars(params.lettersFileName);
-		map = InputData.getGameChars("_tiles1.txt");
+		map = InputData.getGameChars("_tiles4.txt");
 		dictionary = InputData.fillDictionary(
 //				params.dictionaryFileName,
 				"_dictionary.txt",

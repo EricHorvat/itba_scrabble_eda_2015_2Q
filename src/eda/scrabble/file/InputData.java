@@ -9,6 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.xml.internal.ws.util.StringUtils;
+
 import eda.scrabble.Dictionary;
 import eda.scrabble.Game;
 
@@ -67,12 +69,22 @@ public class InputData{
 		
 		return hMap;
 	}
+	
+	private static int countOccurencesOf(String s, char c) {
+		int r = 0;
+		for (int i = 0; i < s.length(); i++) {
+			if (s.charAt(i) == c) {
+				r++;
+			}
+		}
+		return r;
+	}
 
 	private static boolean containsAll(String s, Map<Character, Integer> chars) {
 		
 		for (char c : s.toCharArray()) {
-			Integer times= chars.get((Character)c);
-			if (times == null || times <= 0) {
+			Integer times = chars.get((Character)c);
+			if (times == null || times <= 0 || countOccurencesOf(s, c) > times) {
 				return false;
 			}
 		}
